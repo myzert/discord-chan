@@ -1,0 +1,127 @@
+name: Release Build & Discord Webhook Notification
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y nsis dpkg-dev zip python3-pil python3-cairosvg
+
+      - name: Build Windows Setup Installer (.exe)
+        run: |
+          mkdir -p release
+          makensis installer.nsi
+
+      - name: Build Debian Package (.deb)
+        run: |
+          rm -rf /tmp/discord-chan-deb
+          mkdir -p /tmp/discord-chan-deb/DEBIAN
+          mkdir -p /tmp/discord-chan-deb/usr/local/share/discord-chan
+          mkdir -p /tmp/discord-chan-deb/usr/local/bin
+          mkdir -p /tmp/discord-chan-deb/usr/share/pixmaps
+          mkdir -p /tmp/discord-chan-deb/usr/share/applications
+
+          cat << 'EOF' > /tmp/discord-chan-deb/DEBIAN/control
+          Package: discord-chan
+          Version: 2.6.0
+          Section: utils
+          Priority: optional
+          Architecture: all
+          Depends: python3, python3-pil, python3-tk, python3-cairosvg, curl
+          Maintainer: myzert <zerttcihuy@gmail.com>
+          Description: Universal Anime Theme & Extension Center for Discord
+           An official Discord client styled control center and anime theme customizer
+           for Discord featuring Kaede to Suzu, Whisper Me a Love Song, transparent window
+           mode, zero-lag CSS, modular Chrome-style extensions, and the Neko mascot.
+           Homepage: https://github.com/myzert/discord-chan
+          EOF
+
+          cat << 'EOF' > /tmp/discord-chan-deb/DEBIAN/postinst
+          #!/bin/sh
+          set -e
+          if [ -x /usr/local/share/discord-chan/src/icon_manager.py ]; then
+              python3 /usr/local/share/discord-chan/src/icon_manager.py || true
+          fi
+          exit 0
+          EOF
+          chmod 755 /tmp/discord-chan-deb/DEBIAN/postinst
+
+          cp -r assets /tmp/discord-chan-deb/usr/local/share/discord-chan/
+          cp -r desktop /tmp/discord-chan-deb/usr/local/share/discord-chan/
+          cp -r plugins /tmp/discord-chan-deb/usr/local/share/discord-chan/
+          cp -r src /tmp/discord-chan-deb/usr/local/share/discord-chan/
+          cp -r themes /tmp/discord-chan-deb/usr/local/share/discord-chan/
+          cp discord-chan-studio.py /tmp/discord-chan-deb/usr/local/share/discord-chan/
+          cp install.sh /tmp/discord-chan-deb/usr/local/share/discord-chan/
+          cp uninstall.sh /tmp/discord-chan-deb/usr/local/share/discord-chan/
+
+          ln -sf /usr/local/share/discord-chan/discord-chan-studio.py /tmp/discord-chan-deb/usr/local/bin/discord-chan-custom
+          cp assets/icons/discord-neko.png /tmp/discord-chan-deb/usr/share/pixmaps/discord-chan.png
+          cp assets/icons/discord-neko.png /tmp/discord-chan-deb/usr/share/pixmaps/discord.png
+          cp desktop/discord-chan-custom.desktop /tmp/discord-chan-deb/usr/share/applications/
+
+          dpkg-deb --build /tmp/discord-chan-deb release/discord-chan_2.6.0_all.deb
+
+      - name: Build Portable Archives (.tar.gz & .zip)
+        run: |
+          cd .. && tar --exclude='.git' --exclude='release' --exclude='__pycache__' -czf discord-chan/release/discord-chan_2.6.0.tar.gz discord-chan && cd discord-chan
+          python3 -c "
+          import os, zipfile
+          with zipfile.ZipFile('release/discord-chan_2.6.0.zip', 'w', zipfile.ZIP_DEFLATED) as zf:
+              for foldername, subfolders, filenames in os.walk('.'):
+                  if '.git' in foldername or 'release' in foldername or '__pycache__' in foldername:
+                      continue
+                  for filename in filenames:
+                      if filename.endswith('.pyc') or filename.startswith('.'):
+                          continue
+                      filepath = os.path.join(foldername, filename)
+                      arcname = os.path.relpath(filepath, '.')
+                      zf.write(filepath, arcname)
+          "
+
+      - name: Generate Checksums
+        run: |
+          cd release
+          sha256sum discord-chan_2.6.0_all.deb discord-chan_2.6.0_setup.exe discord-chan_2.6.0.tar.gz discord-chan_2.6.0.zip > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - name: Publish GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG_NAME="${GITHUB_REF_NAME:-v2.6.0}"
+          gh release create "$TAG_NAME" \
+            release/discord-chan_2.6.0_all.deb \
+            release/discord-chan_2.6.0_setup.exe \
+            release/discord-chan_2.6.0.tar.gz \
+            release/discord-chan_2.6.0.zip \
+            release/SHA256SUMS.txt \
+            --title "Discord-Chan $TAG_NAME: All-Custom & Modular Extensions" \
+            --notes-file release/RELEASE_NOTES.md \
+            --draft=false \
+            --prerelease=false || true
+
+      - name: Notify Discord Webhook
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        run: |
+          python3 scripts/notify_discord.py

@@ -204,12 +204,31 @@ main[class*="chatContent_"] {
 }
 
 /* ========================================================
-   CHAT INPUT BAR (KOLOM KIRIM CHAT - NATIVE DISCORD STYLE)
+   CHAT INPUT BAR (KOLOM MAU CHAT - NO DISRUPTIVE SHADOWS)
    ======================================================== */
 [class*="channelBottom_"],
-form[class*="form_"] {
+[class*="channelBottom_"]::before,
+[class*="channelBottom_"]::after,
+form[class*="form_"],
+form[class*="form_"]::before,
+form[class*="form_"]::after,
+[class*="form_"],
+[class*="form_"]::before,
+[class*="form_"]::after {
     background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
     border-top: none !important;
+    border: none !important;
+}
+
+form[class*="form_"]::before,
+form[class*="form_"]::after,
+[class*="channelBottom_"]::before,
+[class*="channelBottom_"]::after {
+    display: none !important;
+    content: none !important;
 }
 
 .channelTextArea__74017,
@@ -220,6 +239,8 @@ form[class*="form_"] {
     border: 1px solid var(--border-subtle) !important;
     border-radius: var(--ui-corner-radius) !important;
     margin-bottom: 16px !important;
+    box-shadow: none !important;
+    filter: none !important;
     transition: border-color 0.2s ease, background 0.2s ease !important;
 }
 
@@ -227,6 +248,7 @@ form[class*="form_"] {
 [class*="channelTextArea_"]:focus-within {
     border-color: var(--accent-pink) !important;
     background: rgba(24, 18, 30, 0.88) !important;
+    box-shadow: none !important;
 }
 
 /* Chat Text Input Action Buttons */
@@ -280,18 +302,49 @@ form[class*="form_"] {
 }
 
 /* ========================================================
-   EMBEDS FIX: NO MUDDY SHADOWS & CLEAN TRANSLUCENT CARDS
+   EMOJI TRANSPARENCY FIX: NO DIRTY BLACK BOXES AROUND EMOJIS
    ======================================================== */
-[class*="embedFull_"],
+img[class*="emoji_"],
+.emoji,
+[class*="jumboable_"],
+[class*="emojiContainer_"],
+[class*="emojiWrapper_"],
+[class*="messageEmoji_"] {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+}
+
+/* ========================================================
+   EMBEDS FIX: NO DIRTY BLACK BOXES & CLEAN TRANSLUCENT CARDS
+   ======================================================== */
+[class*="embedWrapper_"],
 [class*="embed_"],
+[class*="embedFull_"],
 .embed__734c5 {
-    background: rgba(22, 17, 28, 0.75) !important;
+    background: rgba(24, 18, 30, 0.75) !important;
+    background-color: rgba(24, 18, 30, 0.75) !important;
     border: 1px solid var(--border-subtle) !important;
     border-left: 4px solid var(--accent-pink) !important;
     border-radius: var(--ui-corner-radius) !important;
     box-shadow: none !important;
     filter: none !important;
     text-shadow: none !important;
+}
+
+/* Force all inner elements inside embeds to be 100% transparent */
+[class*="embedWrapper_"] *,
+[class*="embedFull_"] *,
+[class*="grid_"],
+[class*="embedMargin_"],
+[class*="embedSuppressButton_"] {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
 }
 
 [class*="embedAuthor_"],
