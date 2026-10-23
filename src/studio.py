@@ -394,7 +394,23 @@ class DiscordStyledStudio:
         self.content_canvas.bind_all("<MouseWheel>", lambda e: self.content_canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
 
     def on_canvas_configure(self, event):
-        self.content_canvas.itemconfig(self.canvas_window, width=event.width)
+        canvas_width = event.width
+        self.content_canvas.itemconfig(self.canvas_window, width=canvas_width)
+        # Dynamically adapt wraplength of all descriptive labels to window size
+        wrap_target = max(280, canvas_width - 80)
+        self._update_responsive_wraplength(self.content_scroll, wrap_target)
+
+    def _update_responsive_wraplength(self, parent_widget, wrap_width):
+        for child in parent_widget.winfo_children():
+            try:
+                if isinstance(child, tk.Label):
+                    current_wrap = child.cget("wraplength")
+                    if current_wrap > 0:
+                        child.configure(wraplength=wrap_width)
+            except Exception:
+                pass
+            if child.winfo_children():
+                self._update_responsive_wraplength(child, max(260, wrap_width - 32))
 
     def create_guild_action(self, text, bg, fg, cmd):
         btn = tk.Button(self.guilds_bar, text=text, font=("DejaVu Sans", 7, "bold"), bg=bg, fg=fg,

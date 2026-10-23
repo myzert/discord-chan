@@ -113,6 +113,15 @@ def get_image_data_uri(file_path):
         print(f"Error encoding image: {e}")
         return ""
 
+def clamp_opacity(val, default=0.5):
+    try:
+        f = float(val)
+        if f > 1.0:
+            f = f / 100.0
+        return max(0.0, min(1.0, f))
+    except (ValueError, TypeError):
+        return default
+
 def generate_theme_css(settings):
     # Master switch: if theme is disabled, return clean vanilla styles
     if not settings.get("theme_enabled", True) or settings.get("theme_mode") == "vanilla_discord":
@@ -136,22 +145,22 @@ def generate_theme_css(settings):
     accent = settings.get("accent_color", "#ff85a2")
     soft_pink = settings.get("soft_pink", "#fbcfe8")
     speaking = settings.get("speaking_color", "#ff85a2")
-    wp_opacity = float(settings.get("wallpaper_opacity", 0.55))
-    win_darkness = float(settings.get("window_darkness", 0.40))
-    sidebar_op = float(settings.get("sidebar_opacity", 0.65))
-    guilds_op = float(settings.get("guilds_opacity", 0.82))
-    chat_input_op = float(settings.get("chat_input_opacity", 0.72))
-    embed_op = float(settings.get("embed_opacity", 0.75))
+    wp_opacity = clamp_opacity(settings.get("wallpaper_opacity", 0.55), 0.55)
+    win_darkness = clamp_opacity(settings.get("window_darkness", 0.40), 0.40)
+    sidebar_op = clamp_opacity(settings.get("sidebar_opacity", 0.65), 0.65)
+    guilds_op = clamp_opacity(settings.get("guilds_opacity", 0.82), 0.82)
+    chat_input_op = clamp_opacity(settings.get("chat_input_opacity", 0.72), 0.72)
+    embed_op = clamp_opacity(settings.get("embed_opacity", 0.75), 0.75)
     corner_radius = int(settings.get("corner_radius", 12))
-    tile_opacity = float(settings.get("tile_opacity", 0.35))
+    tile_opacity = clamp_opacity(settings.get("tile_opacity", 0.35), 0.35)
     tile_radius = int(settings.get("tile_radius", 12))
-    profile_opacity = float(settings.get("profile_opacity", 0.88))
+    profile_opacity = clamp_opacity(settings.get("profile_opacity", 0.88), 0.88)
     top_spacing = int(settings.get("top_spacing", 12))
 
     # Background layer logic depending on mode
     if mode == "window_transparent":
         bg_wallpaper_css = """
-body, #app-mount {
+html, body, #app-mount {
     background-color: transparent !important;
     background: transparent !important;
 }
@@ -168,27 +177,30 @@ body, #app-mount {
 }"""
     else:
         bg_wallpaper_css = """
-body {
+html, body {
     background-color: #120e16 !important;
 }
-#app-mount::before {
-    content: "" !important;
-    position: fixed !important;
-    inset: 0 !important;
+body {
     background-image: var(--anime-wallpaper) !important;
     background-size: cover !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
-    pointer-events: none !important;
-    z-index: -2 !important;
+    background-attachment: fixed !important;
 }
-#app-mount::after {
+#app-mount {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+#app-mount::before {
     content: "" !important;
     position: fixed !important;
     inset: 0 !important;
     background: var(--bg-overlay) !important;
     pointer-events: none !important;
     z-index: -1 !important;
+}
+#app-mount::after {
+    display: none !important;
 }"""
 
     css = f"""/**
@@ -301,6 +313,8 @@ body {
 /* ========================================================
    CHAT COLUMN & CONTAINER TRANSPARENCY (FIXED ZERO SOLID GREY)
    ======================================================== */
+.appDevToolsWrapper__160d8,
+[class*="appDevToolsWrapper_"],
 .app__160d8,
 .bg__960e4,
 .layer__960e4,
@@ -327,6 +341,8 @@ body {
 [class*="scrollerContent_"],
 [class*="scrollerBase_"],
 [class*="pageWrapper_"],
+[class*="subtitleContainer_"],
+.chat__52833 > [class*="content_"],
 main[class*="chatContent_"] {{
     background: transparent !important;
     background-color: transparent !important;
@@ -619,6 +635,28 @@ img[class*="emoji_"],
 }}
 ::-webkit-scrollbar-thumb:hover {{
     background: var(--accent-pink) !important;
+}}
+
+/* ========================================================
+   RESPONSIVE DISCORD WINDOW ADAPTATION (FOLLOW WINDOW SIZE)
+   ======================================================== */
+@media (max-width: 1100px) {{
+    .sidebar_c48ade,
+    [class*="sidebar_"] {{
+        width: 210px !important;
+    }}
+}}
+@media (max-width: 900px) {{
+    .membersWrap__5ca65,
+    [class*="membersWrap_"] {{
+        min-width: 54px !important;
+        width: 54px !important;
+        transition: width 0.22s ease !important;
+    }}
+    .membersWrap__5ca65:hover,
+    [class*="membersWrap_"]:hover {{
+        width: 240px !important;
+    }}
 }}
 """
     # ========================================================

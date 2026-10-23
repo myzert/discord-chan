@@ -14,7 +14,7 @@
     
     /* Aesthetic Color Palette */
     --accent-pink: #fb7185;
-    --accent-pink-soft: #fbcfe8;
+    --accent-pink-soft: #fecdd3;
     --accent-pink-hover: #ff9cb3;
     --accent-pink-active: #fa6d8f;
     --accent-pink-dim: rgba(255, 133, 162, 0.16);
@@ -27,7 +27,7 @@
     --background-primary: transparent !important;
     --background-secondary: rgba(24, 18, 30, 0.42) !important;
     --background-secondary-alt: rgba(18, 14, 22, 0.78) !important;
-    --background-tertiary: rgba(14, 10, 18, 82.0) !important;
+    --background-tertiary: rgba(14, 10, 18, 0.82) !important;
     --background-accent: #fb7185 !important;
     --background-floating: rgba(26, 20, 32, 0.95) !important;
     --channeltextarea-background: rgba(18, 14, 22, 0.72) !important;
@@ -35,7 +35,7 @@
     --chat-background-default: transparent !important;
     --bg-base-primary: transparent !important;
     --bg-base-secondary: rgba(24, 18, 30, 0.42) !important;
-    --bg-base-tertiary: rgba(14, 10, 18, 82.0) !important;
+    --bg-base-tertiary: rgba(14, 10, 18, 0.82) !important;
     --bg-surface-raised: rgba(22, 17, 28, 0.75) !important;
     --bg-surface-overlay: rgba(26, 20, 32, 0.95) !important;
 
@@ -50,7 +50,7 @@
     /* Translucent Background Overlays */
     --bg-overlay: rgba(14, 11, 18, 0.32);
     --bg-panels: rgba(24, 18, 29, 0.75);
-    --bg-darker: rgba(14, 10, 18, 82.0);
+    --bg-darker: rgba(14, 10, 18, 0.82);
     --bg-sidebar: rgba(20, 15, 24, 0.42);
     --bg-floating: rgba(28, 21, 34, 0.95);
 
@@ -89,27 +89,30 @@
    GLOBAL ZERO-LAG BACKGROUND (ANIME OR TRANSPARENT WINDOW)
    ======================================================== */
 
-body {
+html, body {
     background-color: #120e16 !important;
 }
-#app-mount::before {
-    content: "" !important;
-    position: fixed !important;
-    inset: 0 !important;
+body {
     background-image: var(--anime-wallpaper) !important;
     background-size: cover !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
-    pointer-events: none !important;
-    z-index: -2 !important;
+    background-attachment: fixed !important;
 }
-#app-mount::after {
+#app-mount {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+#app-mount::before {
     content: "" !important;
     position: fixed !important;
     inset: 0 !important;
     background: var(--bg-overlay) !important;
     pointer-events: none !important;
     z-index: -1 !important;
+}
+#app-mount::after {
+    display: none !important;
 }
 
 /* ========================================================
@@ -130,6 +133,8 @@ body {
 /* ========================================================
    CHAT COLUMN & CONTAINER TRANSPARENCY (FIXED ZERO SOLID GREY)
    ======================================================== */
+.appDevToolsWrapper__160d8,
+[class*="appDevToolsWrapper_"],
 .app__160d8,
 .bg__960e4,
 .layer__960e4,
@@ -156,6 +161,8 @@ body {
 [class*="scrollerContent_"],
 [class*="scrollerBase_"],
 [class*="pageWrapper_"],
+[class*="subtitleContainer_"],
+.chat__52833 > [class*="content_"],
 main[class*="chatContent_"] {
     background: transparent !important;
     background-color: transparent !important;
@@ -448,6 +455,28 @@ img[class*="emoji_"],
 }
 ::-webkit-scrollbar-thumb:hover {
     background: var(--accent-pink) !important;
+}
+
+/* ========================================================
+   RESPONSIVE DISCORD WINDOW ADAPTATION (FOLLOW WINDOW SIZE)
+   ======================================================== */
+@media (max-width: 1100px) {
+    .sidebar_c48ade,
+    [class*="sidebar_"] {
+        width: 210px !important;
+    }
+}
+@media (max-width: 900px) {
+    .membersWrap__5ca65,
+    [class*="membersWrap_"] {
+        min-width: 54px !important;
+        width: 54px !important;
+        transition: width 0.22s ease !important;
+    }
+    .membersWrap__5ca65:hover,
+    [class*="membersWrap_"]:hover {
+        width: 240px !important;
+    }
 }
 
 
