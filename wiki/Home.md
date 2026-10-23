@@ -7,9 +7,10 @@ Welcome to the official documentation for **Discord-Chan Studio & Custom Anime T
 2. [Display Modes: Anime Wallpaper vs. Transparent Window](Display-Modes)
 3. [Full Customization Guide](Customization-Guide)
 4. [Modular Chrome-Style Extension System (.zip)](Extension-System)
-5. [Export & Import Themes (.zip Bundles)](Theme-Packager)
-6. [Zero-Lag Engine & Performance Optimization](Zero-Lag-Engine)
-7. [Terms of Service & Client-Side Safety FAQ](Safety-and-FAQ)
+5. [BetterDiscord Addon Store & Downloader](BetterDiscord-Store)
+6. [Export & Import Themes (.zip Bundles)](Theme-Packager)
+7. [Zero-Lag Engine & Performance Optimization](Zero-Lag-Engine)
+8. [Terms of Service & Client-Side Safety FAQ](Safety-and-FAQ)
 
 ---
 

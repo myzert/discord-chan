@@ -19,6 +19,7 @@ import os
 import sys
 import json
 import subprocess
+import threading
 import tkinter as tk
 from tkinter import filedialog, colorchooser, messagebox
 from PIL import Image, ImageTk
@@ -29,6 +30,7 @@ sys.path.insert(0, SCRIPT_DIR)
 
 import theme_engine
 import bd_injector
+import bd_store
 import icon_manager
 import plugins_manager
 import theme_packager
@@ -282,6 +284,9 @@ class DiscordStyledStudio:
         self.add_channel_btn("voice", "voice-and-video")
         self.add_channel_btn("layout", "layout-and-clearance")
 
+        self.add_category_header("BETTERDISCORD ADDONS")
+        self.add_channel_btn("bd_store", "download-ui-and-plugins")
+
         self.add_category_header("EXTENSIONS & PACKAGES")
         self.add_channel_btn("packager", "export-import-themes")
         self.add_channel_btn("extensions", "plugin-extensions-zip")
@@ -350,6 +355,15 @@ class DiscordStyledStudio:
         btn.pack(pady=4)
 
     def build_user_bar(self):
+        # Powered by BetterDiscord Footer Badge
+        bd_badge = tk.Frame(self.sidebar, bg="#1e1f22", padx=10, pady=7)
+        bd_badge.pack(fill="x", side="bottom")
+
+        tk.Label(bd_badge, text="POWERED BY BETTERDISCORD", font=("DejaVu Sans", 7, "bold"), bg="#1e1f22", fg="#5865f2").pack(anchor="w")
+        tk.Label(bd_badge, text="Client Modding Engine & API", font=("DejaVu Sans", 6), bg="#1e1f22", fg=C_MUTED).pack(anchor="w")
+
+        tk.Frame(self.sidebar, bg=C_BORDER, height=1).pack(fill="x", side="bottom")
+
         user_bar = tk.Frame(self.sidebar, bg="#232428", height=54, padx=8)
         user_bar.pack(fill="x", side="bottom")
         user_bar.pack_propagate(False)
@@ -418,6 +432,10 @@ class DiscordStyledStudio:
             self.top_channel_title.config(text="layout-and-clearance")
             self.top_topic.config(text="| Window clearance (anti-collision), zero-lag mode, avatar grid guard")
             self.render_layout_tab()
+        elif tab_id == "bd_store":
+            self.top_channel_title.config(text="betterdiscord-addons-store")
+            self.top_topic.config(text="| Download BetterDiscord UI themes & plugins directly with 1-click")
+            self.render_bd_store_tab()
         elif tab_id == "packager":
             self.top_channel_title.config(text="export-import-themes")
             self.top_topic.config(text="| Export and import full custom themes (.zip bundle)")
@@ -947,6 +965,188 @@ class DiscordStyledStudio:
                 messagebox.showerror("Error", msg)
 
     # -------------------------------------------------------------
+    # TAB: BETTERDISCORD ADDON STORE (THEMES & PLUGINS)
+    # -------------------------------------------------------------
+    def render_bd_store_tab(self):
+        c = self.content_scroll
+
+        # 1. Store Header & Powered by BetterDiscord Card
+        card_head = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_head.pack(fill="x", pady=(0, 14))
+
+        head_row = tk.Frame(card_head, bg=C_CARD)
+        head_row.pack(fill="x")
+
+        title_col = tk.Frame(head_row, bg=C_CARD)
+        title_col.pack(side="left", fill="both", expand=True)
+
+        tk.Label(title_col, text="BetterDiscord Addon Store & UI Downloader", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        desc = "Download popular community UI themes and plugins directly into BetterDiscord with 1-click. No manual file moving required."
+        tk.Label(title_col, text=desc, font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED, wraplength=640, justify="left").pack(anchor="w", pady=(2, 4))
+
+        # Big Distinction Badge
+        badge_frame = tk.Frame(head_row, bg="#5865f2", padx=14, pady=8)
+        badge_frame.pack(side="right", padx=(10, 0))
+        tk.Label(badge_frame, text="POWERED BY", font=("DejaVu Sans", 7, "bold"), bg="#5865f2", fg="#e0e3ff").pack(anchor="center")
+        tk.Label(badge_frame, text="BetterDiscord Engine", font=("DejaVu Sans", 9, "bold"), bg="#5865f2", fg="#ffffff").pack(anchor="center")
+
+        tk.Frame(card_head, bg=C_BORDER, height=1).pack(fill="x", pady=10)
+
+        # BetterDiscord Directory Status & Open Buttons
+        bd_base, bd_themes, bd_plugins = bd_store.get_bd_dirs()
+        bd_status = bd_injector.check_status()
+        status_txt = "Active & Injected" if bd_status.get("injected") else "Installed (Not Injected)"
+
+        info_row = tk.Frame(card_head, bg=C_CARD)
+        info_row.pack(fill="x")
+
+        stat_badge_col = tk.Frame(info_row, bg=C_CARD)
+        stat_badge_col.pack(side="left")
+        tk.Label(stat_badge_col, text=f"Engine Status: {status_txt}", font=("DejaVu Sans", 8, "bold"), bg=C_CARD, fg=C_GREEN if bd_status.get("injected") else C_MUTED).pack(side="left")
+        tk.Label(stat_badge_col, text=f"  |  Location: {bd_base}", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED).pack(side="left")
+
+        actions_sub = tk.Frame(info_row, bg=C_CARD)
+        actions_sub.pack(side="right")
+
+        tk.Button(actions_sub, text="Open Themes Folder", font=("DejaVu Sans", 8), bg="#3b3e45", fg=C_TEXT_H,
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  command=lambda: self.open_folder_system(bd_themes)).pack(side="left", padx=(0, 6))
+
+        tk.Button(actions_sub, text="Open Plugins Folder", font=("DejaVu Sans", 8), bg="#3b3e45", fg=C_TEXT_H,
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  command=lambda: self.open_folder_system(bd_plugins)).pack(side="left")
+
+        # 2. Custom URL Downloader
+        card_url = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        card_url.pack(fill="x", pady=(0, 14))
+
+        tk.Label(card_url, text="Direct Link Downloader (Custom GitHub / BetterDiscord Addon URL)", font=("DejaVu Sans", 9, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_url, text="Paste any .theme.css or .plugin.js raw URL to automatically download and install it into BetterDiscord:", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(1, 6))
+
+        row_input = tk.Frame(card_url, bg=C_CARD)
+        row_input.pack(fill="x")
+
+        self.bd_url_entry = tk.Entry(row_input, bg="#1e1f22", fg="#ffffff", insertbackground="#ffffff", relief="flat", font=("DejaVu Sans", 9))
+        self.bd_url_entry.pack(side="left", fill="x", expand=True, ipady=6, padx=(0, 8))
+
+        btn_url_dl = tk.Button(row_input, text="Download & Install URL", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#ffffff",
+                               relief="flat", padx=14, pady=5, cursor="hand2",
+                               command=self.action_install_from_url)
+        btn_url_dl.pack(side="right")
+
+        # 3. Addon Filter & Catalog
+        card_addons = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_addons.pack(fill="x")
+
+        filter_row = tk.Frame(card_addons, bg=C_CARD)
+        filter_row.pack(fill="x", pady=(0, 10))
+
+        tk.Label(filter_row, text="Curated Community Catalog", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(side="left")
+
+        curr_filter = getattr(self, "bd_filter", "all")
+
+        btn_all = tk.Button(filter_row, text="All Addons (12)", font=("DejaVu Sans", 8, "bold" if curr_filter == "all" else "normal"),
+                            bg=C_BLURPLE if curr_filter == "all" else "#3b3e45", fg="#ffffff",
+                            relief="flat", padx=10, pady=3, cursor="hand2", command=lambda: self.set_bd_filter("all"))
+        btn_all.pack(side="right", padx=(4, 0))
+
+        btn_plug = tk.Button(filter_row, text="Plugins (6)", font=("DejaVu Sans", 8, "bold" if curr_filter == "plugin" else "normal"),
+                             bg=C_BLURPLE if curr_filter == "plugin" else "#3b3e45", fg="#ffffff",
+                             relief="flat", padx=10, pady=3, cursor="hand2", command=lambda: self.set_bd_filter("plugin"))
+        btn_plug.pack(side="right", padx=(4, 0))
+
+        btn_thm = tk.Button(filter_row, text="Themes / UI (6)", font=("DejaVu Sans", 8, "bold" if curr_filter == "theme" else "normal"),
+                            bg=C_BLURPLE if curr_filter == "theme" else "#3b3e45", fg="#ffffff",
+                            relief="flat", padx=10, pady=3, cursor="hand2", command=lambda: self.set_bd_filter("theme"))
+        btn_thm.pack(side="right")
+
+        items = [x for x in bd_store.CURATED_ADDONS if curr_filter == "all" or x["type"] == curr_filter]
+
+        for item in items:
+            is_inst = bd_store.is_addon_installed(item["type"], item["filename"])
+            row_item = tk.Frame(card_addons, bg=C_CARD_ALT, padx=12, pady=10)
+            row_item.pack(fill="x", pady=4)
+
+            left_c = tk.Frame(row_item, bg=C_CARD_ALT)
+            left_c.pack(side="left", fill="both", expand=True)
+
+            t_row = tk.Frame(left_c, bg=C_CARD_ALT)
+            t_row.pack(fill="x")
+
+            type_bg = "#805ad5" if item["type"] == "theme" else "#2b6cb0"
+            type_txt = "THEME (UI)" if item["type"] == "theme" else "PLUGIN"
+            tk.Label(t_row, text=f" {type_txt} ", font=("DejaVu Sans", 7, "bold"), bg=type_bg, fg="#ffffff").pack(side="left", padx=(0, 6))
+
+            tk.Label(t_row, text=f"{item['name']} v{item['version']}", font=("DejaVu Sans", 9, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(side="left")
+            tk.Label(t_row, text=f"  •  by {item['author']} ({item['tag']})", font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED).pack(side="left")
+
+            tk.Label(left_c, text=item["description"], font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED, wraplength=620, justify="left").pack(anchor="w", pady=(3, 0))
+
+            right_c = tk.Frame(row_item, bg=C_CARD_ALT)
+            right_c.pack(side="right", padx=(10, 0))
+
+            if is_inst:
+                tk.Label(right_c, text="[Installed]", font=("DejaVu Sans", 8, "bold"), bg=C_CARD_ALT, fg=C_GREEN).pack(side="left", padx=(0, 8))
+                btn_del = tk.Button(right_c, text="Uninstall", font=("DejaVu Sans", 8), bg=C_RED, fg="#ffffff",
+                                    relief="flat", padx=10, pady=3, cursor="hand2",
+                                    command=lambda it=item: self.action_uninstall_bd_addon(it))
+                btn_del.pack(side="left")
+            else:
+                btn_dl = tk.Button(right_c, text="Download & Install", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#ffffff",
+                                   relief="flat", padx=12, pady=4, cursor="hand2",
+                                   command=lambda it=item: self.action_download_bd_addon(it))
+                btn_dl.pack(side="left")
+
+    def set_bd_filter(self, filter_name):
+        self.bd_filter = filter_name
+        self.show_tab("bd_store")
+
+    def open_folder_system(self, path):
+        if sys.platform == "win32":
+            os.startfile(path)
+        elif sys.platform == "darwin":
+            subprocess.run(["open", path])
+        else:
+            subprocess.run(["xdg-open", path])
+
+    def action_download_bd_addon(self, addon_item):
+        def _task():
+            ok, msg = bd_store.download_addon(addon_item)
+            self.root.after(0, lambda: self._on_addon_downloaded(ok, msg))
+
+        threading.Thread(target=_task, daemon=True).start()
+
+    def _on_addon_downloaded(self, ok, msg):
+        self.show_tab("bd_store")
+        if ok:
+            messagebox.showinfo("Success", f"{msg}\n\nTip: Press Ctrl+R in Discord to reload and activate!")
+        else:
+            messagebox.showerror("Download Failed", msg)
+
+    def action_uninstall_bd_addon(self, addon_item):
+        ok, msg = bd_store.uninstall_addon(addon_item["type"], addon_item["filename"])
+        self.show_tab("bd_store")
+        if ok:
+            messagebox.showinfo("Uninstalled", f"{msg}\n\nTip: Press Ctrl+R in Discord to reload.")
+        else:
+            messagebox.showerror("Error", msg)
+
+    def action_install_from_url(self):
+        url = getattr(self, "bd_url_entry", None)
+        if not url:
+            return
+        url_text = url.get().strip()
+        if not url_text:
+            messagebox.showwarning("Notice", "Please enter a valid URL to download.")
+            return
+
+        def _task():
+            ok, msg = bd_store.install_custom_url(url_text)
+            self.root.after(0, lambda: self._on_addon_downloaded(ok, msg))
+
+        threading.Thread(target=_task, daemon=True).start()
+
+    # -------------------------------------------------------------
     # TAB 9: CONTRIBUTORS & WIKI
     # -------------------------------------------------------------
     def render_about_tab(self):
@@ -1003,6 +1203,7 @@ class DiscordStyledStudio:
 
         commands = [
             ("Toggle Master Theme (ON / OFF)", lambda: [pal_win.destroy(), self.toggle_master_theme()]),
+            ("Browse BetterDiscord Addon Store (Themes & Plugins)", lambda: [pal_win.destroy(), self.show_tab("bd_store")]),
             ("Switch to Anime Wallpaper Mode", lambda: [pal_win.destroy(), self.select_display_mode("anime_wallpaper")]),
             ("Switch to Transparent Window Mode", lambda: [pal_win.destroy(), self.select_display_mode("window_transparent")]),
             ("Switch to Vanilla Discord Client", lambda: [pal_win.destroy(), self.select_display_mode("vanilla_discord")]),

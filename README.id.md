@@ -17,7 +17,7 @@
   <a href="https://github.com/myzert/discord-chan/stargazers"><img src="https://img.shields.io/github/stars/myzert/discord-chan?color=ff85a2&logo=github&style=for-the-badge" alt="Stars" /></a>
   <a href="https://github.com/myzert/discord-chan/network/members"><img src="https://img.shields.io/github/forks/myzert/discord-chan?color=fbcfe8&logo=github&style=for-the-badge" alt="Forks" /></a>
   <a href="https://github.com/myzert/discord-chan/blob/main/LICENSE"><img src="https://img.shields.io/badge/Lisensi-GPLv3-pink?style=for-the-badge" alt="License" /></a>
-  <a href="https://betterdiscord.app/"><img src="https://img.shields.io/badge/BetterDiscord-Kompatibel-blueviolet?style=for-the-badge&logo=discord" alt="BetterDiscord" /></a>
+  <a href="https://betterdiscord.app/"><img src="https://img.shields.io/badge/Powered%20by-BetterDiscord%20Engine-5865f2?style=for-the-badge&logo=discord&logoColor=white" alt="Powered by BetterDiscord" /></a>
   <a href="#"><img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-brightgreen?style=for-the-badge" alt="Platforms" /></a>
   <a href="#"><img src="https://img.shields.io/badge/ToS-100%25%20Aman%20(Client--Side)-success?style=for-the-badge" alt="Safe" /></a>
 </p>
@@ -78,6 +78,24 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 | **Ekspor & Impor Tema (.zip Bundle)** | Bagikan hasil custom temamu ke teman! Mengekspor semua nilai slider, warna hex, dan wallpaper bawaan ke dalam 1 file `.zip`. |
 | **Engine Zero-Lag & Anti-Collision** | Menghapus efek `box-shadow` dan `backdrop-filter: blur` yang bikin berat. Dilengkapi jarak atas (`top-spacing`) agar tidak nabrak taskbar. |
 | **Pintasan Command Palette (`Ctrl+Shift+P`)** | Buka panel kontrol Studio langsung dari dalam Discord atau desktop kapan saja dengan `Ctrl+Shift+P`. |
+| **Store & Downloader Addon BetterDiscord** | Download tema UI populer (ClearVision, Translucence, Frosted Glass, Dark Matter) dan plugin komunitas (ShowHiddenChannels, BetterRoleColors, VoiceEvents) langsung dengan 1 klik ke BetterDiscord tanpa perlu copy file manual. |
+
+---
+
+## ⚡ Pembeda Besar: Discord-Chan vs Vanilla BetterDiscord
+
+| Aspek Fitur | Vanilla BetterDiscord | Discord-Chan Studio |
+| :--- | :--- | :--- |
+| **Arsitektur Engine** | Mod loader & runtime plugin saja | **Powered by BetterDiscord Engine** + Studio Visual Terpadu |
+| **GUI Pengaturan Tema** | Manual edit file CSS sendiri | **Panel Kontrol Studio Bergaya Discord Asli** (`Ctrl+Shift+P` & `F11`) |
+| **1-Click Addons Store** | Download manual di web lalu copy file | **Store Bawaan di Panel & Downloader URL Otomatis** |
+| **3 Mode Tampilan Instan** | Harus gonta-ganti file tema | **3 Mode 1-Klik** (Wallpaper Anime, Tembus Aplikasi Belakang, Vanilla) |
+| **Transparansi Kolom Chat** | Kaku dan sering tertutup abu-abu | **100% Kaca Tembus Pandang** tanpa abu-abu solid penghalang |
+| **Slider UI Real-Time** | Tidak ada (harus otak-atik kode) | **Slider Langsung** untuk Wallpaper, Chat, Sidebar, Embed & Sudut (`0px` - `24px`) |
+| **Wallpaper Kustom** | Ubah link URL di dalam CSS | **Pemilih Wallpaper Bawaan** dengan preset anime & file picker lokal |
+| **Format Ekstensi Modular** | Hanya plugin `.js` standar | **Format Paket ZIP Modular Seperti Chrome** (`manifest.json` + `style.css`) |
+| **Portabilitas Tema** | Copy paste folder manual | **Ekspor & Impor Tema Lengkap (.zip)** termasuk file wallpaper di dalamnya |
+| **Anti Tabrakan Window** | Rentan nabrak panel/taskbar OS | **Pengatur Top-Spacing & Optimasi Zero-Lag CSS Bawaan** |
 
 ---
 

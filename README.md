@@ -17,7 +17,7 @@
   <a href="https://github.com/myzert/discord-chan/stargazers"><img src="https://img.shields.io/github/stars/myzert/discord-chan?color=ff85a2&logo=github&style=for-the-badge" alt="Stars" /></a>
   <a href="https://github.com/myzert/discord-chan/network/members"><img src="https://img.shields.io/github/forks/myzert/discord-chan?color=fbcfe8&logo=github&style=for-the-badge" alt="Forks" /></a>
   <a href="https://github.com/myzert/discord-chan/blob/main/LICENSE"><img src="https://img.shields.io/badge/License-GPLv3-pink?style=for-the-badge" alt="License" /></a>
-  <a href="https://betterdiscord.app/"><img src="https://img.shields.io/badge/BetterDiscord-Compatible-blueviolet?style=for-the-badge&logo=discord" alt="BetterDiscord" /></a>
+  <a href="https://betterdiscord.app/"><img src="https://img.shields.io/badge/Powered%20by-BetterDiscord%20Engine-5865f2?style=for-the-badge&logo=discord&logoColor=white" alt="Powered by BetterDiscord" /></a>
   <a href="#"><img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-brightgreen?style=for-the-badge" alt="Platforms" /></a>
   <a href="#"><img src="https://img.shields.io/badge/ToS-100%25%20Safe%20(Client--Side)-success?style=for-the-badge" alt="Safe" /></a>
 </p>
@@ -78,6 +78,24 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 | **Export & Import Theme Bundles (.zip)** | Share your custom themes with friends! Exports all parameters, CSS, and embedded wallpapers into a single `.zip` file. |
 | **Zero-Lag & Anti-Collision Engine** | Eliminates CPU-heavy `box-shadow` and `backdrop-filter: blur`. Configurable `top-spacing` prevents header collision with window panels. |
 | **In-Discord Command Palette (`Ctrl+Shift+P`)** | Launch the Studio Control Center directly from inside Discord or desktop with `Ctrl+Shift+P`. |
+| **BetterDiscord Addon Store & Downloader** | Direct 1-click download for popular community UI themes (ClearVision, Translucence, Frosted Glass, Dark Matter) and plugins (ShowHiddenChannels, BetterRoleColors, VoiceEvents) directly into BetterDiscord without manual file copying. |
+
+---
+
+## ⚡ Big Distinctions: Discord-Chan vs Vanilla BetterDiscord
+
+| Feature Aspect | Vanilla BetterDiscord | Discord-Chan Studio |
+| :--- | :--- | :--- |
+| **Engine Architecture** | Mod loader & plugin runtime | **Powered by BetterDiscord Engine** + Visual Discord-Styled Studio |
+| **Theme Customizer GUI** | Manual CSS file editing | **Dedicated Control Studio Dashboard** (`Ctrl+Shift+P` & `F11`) |
+| **1-Click Addons Store** | Manual download & moving `.css`/`.js` files | **Built-in 1-Click Store & Direct Link Downloader** |
+| **Display Modes** | Manual theme swapping | **3 One-Click Modes** (Anime Wallpaper, See-Through Window, Vanilla) |
+| **Chat Column Translucency** | Hard-coded per theme | **100% Glass Translucent Chat** with zero solid grey obstruction |
+| **Live UI Sliders** | None (edit code) | **Live Sliders** for Wallpapers, Chat, Sidebars, Embeds & Corner Radius (`0px` - `24px`) |
+| **Custom Wallpapers** | Edit CSS code URLs | **In-App Wallpaper Selector** with curated presets and local file picker |
+| **Extensions Architecture** | Standard JS plugins | **Modular Chrome-Style ZIP Packages** (`manifest.json` + `style.css`) |
+| **Theme Portability** | Manual file copying | **1-Click ZIP Theme Export & Import** with embedded wallpapers |
+| **Window Clearance Guard** | Prone to panel collisions | **Configurable Top Spacing & Zero-Lag CSS engine** |
 
 ---
 
