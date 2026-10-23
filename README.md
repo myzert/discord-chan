@@ -6,11 +6,11 @@
   <img src="assets/icons/discord-neko.png" width="96" height="96" alt="Discord-Chan Mascot Logo" style="border-radius: 20px;" />
 </p>
 
-<h1 align="center">Discord-Chan Studio: Universal Anime Theme & Control Center</h1>
+<h1 align="center">Discord-Chan Studio: Universal Anime Theme & Extension Center</h1>
 
 <p align="center">
-  <b>Official Discord-Styled Control Center & Anime Theme Customizer (Linux & Windows)</b><br>
-  <i>Featuring Kaede to Suzu & Whisper Me a Love Song • All-Custom Wallpapers • Zero-Lag Engine • 1-Click Instant Setup • GPLv3</i>
+  <b>Official Discord-Styled Control Center, All-Custom Theme Engine & Modular Extensions (Linux & Windows)</b><br>
+  <i>Master Toggle (ON/OFF) • Transparent Window & Anime Modes • 100% Glass Chat Column • Corner Radius Slider • Chrome-Style ZIP Extensions • Export/Import Themes • GPLv3</i>
 </p>
 
 <p align="center">
@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  <b>Language:</b> <b>English</b> | <a href="README.id.md"><b>Bahasa Indonesia</b></a>
+  <b>Language:</b> <b>English</b> | <a href="README.id.md"><b>Bahasa Indonesia</b></a> | <a href="wiki/Home.md"><b>Wiki Docs</b></a>
 </p>
 
 ---
@@ -33,8 +33,8 @@
 > [!IMPORTANT]
 > **Discord-Chan is a 100% Client-Side Aesthetic CSS & BetterDiscord Theme Customizer.**
 > - **NOT A NITRO UNLOCKER / MOD:** This project **does NOT unlock paid Discord Nitro perks** (no server boosting, no paywall bypasses).
-> - **NO CORE BINARY TAMPERING:** We do not touch Discord server APIs, tokens, or private user data.
-> - **100% SAFE & BAN-FREE:** It purely modifies client-side CSS styling (colors, wallpapers, glass translucency, and chat avatar alignment) through standard BetterDiscord theme injection.
+> - **NO CORE BINARY TAMPERING:** We do not touch Discord server APIs, user tokens, or private messages.
+> - **100% SAFE & BAN-FREE:** It purely modifies client-side CSS styling (colors, glass translucency, wallpapers, and chat avatar alignment) through standard BetterDiscord theme injection.
 
 ---
 
@@ -64,29 +64,30 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 
 ---
 
-## Features at a Glance
+## What's New & Core Features
 
 | Feature | Description |
 | :--- | :--- |
-| **Discord-Styled Studio Dashboard** | Built with native Discord client dark styling (`#1e1f22`, `#2b2d31`, `#313338`), 3-pane guild/channel navigation, and zero AI-retro artifacts. |
-| **All-Custom Wallpaper Manager** | Not locked to a single anime! Select from curated anime presets (*Kaede to Suzu*, *Whisper Me a Love Song*, *Sakura*, *Pastel Clouds*) or load ANY custom image (JPG, PNG, WEBP, GIF) with live thumbnail preview. |
-| **Zero-Lag Engine** | Strips performance-heavy `box-shadow` and `backdrop-filter: blur` lags for a solid 60 FPS experience on both integrated and dedicated GPUs. |
-| **Independent Glass Translucency** | Fine-tune Background Darkness, Channel Sidebar Transparency, and Chat Message Opacity with live percentage sliders. |
-| **Window Clearance (Anti-Collision)** | Configurable `top-spacing` prevents Discord headers from colliding with Linux top panels (XFCE / GNOME / KDE) or Windows titlebars. |
-| **Chat Avatar Guard** | Native Discord message layout is protected—avatars never overlap, distort, or misalign. |
-| **Voice & Profile Modernization** | Translucent video/screen share tiles, customizable glowing speaking ring, and glass-styled profile popout cards. |
-| **Clean Mascot Application Icon** | Clean Neko mascot app icon without artificial high-contrast borders or desktop clutter. |
-| **In-Discord Command Palette (`Ctrl+Shift+P`)** | Launch the Control Center directly from inside Discord or desktop using `Ctrl+Shift+P`. |
+| **Master Theme Switch (ON / OFF)** | Enable or disable the entire custom theme with 1 click. When turned OFF, Discord returns immediately to 100% vanilla default. |
+| **3 Display Architectures** | Choose between **Anime Wallpaper Mode**, **See-Through Window Transparency** (see applications and desktop behind Discord), or **Vanilla Discord**. |
+| **100% Glass Chat Column** | Fixed all solid-grey background blocks by overriding Discord's core design tokens. Anime art shines through with zero obstruction. |
+| **Native Styled Chat Input Box** | Text input area mirrors Discord's native chat bar with translucent glass, accent glow on focus, and clean action buttons. |
+| **UI Corner Radius Customization** | Slider from sharp `0px` to rounded `24px` to customize the curvature of chat boxes, embed cards, modals, and buttons. |
+| **Embeds Styling Fix** | Eliminates muddy shadows and laggy gradients. Embeds render as clean translucent cards with solid left color accent bars. |
+| **Chrome-Style Extension System (.zip)** | Install community add-ons packaged in `.zip` format (`manifest.json` + `style.css`), or generate boilerplate extension templates. |
+| **Export & Import Theme Bundles (.zip)** | Share your custom themes with friends! Exports all parameters, CSS, and embedded wallpapers into a single `.zip` file. |
+| **Zero-Lag & Anti-Collision Engine** | Eliminates CPU-heavy `box-shadow` and `backdrop-filter: blur`. Configurable `top-spacing` prevents header collision with window panels. |
+| **In-Discord Command Palette (`Ctrl+Shift+P`)** | Launch the Studio Control Center directly from inside Discord or desktop with `Ctrl+Shift+P`. |
 
 ---
 
 ## Screenshots & Previews
 
-### 1. Discord-Styled Studio Dashboard
-![Studio Preview](assets/previews/preview_studio.png)
-
-### 2. Discord Anime Interface
+### 1. Discord Anime Glass Interface
 ![Discord Theme Preview](assets/previews/preview_discord.png)
+
+### 2. Discord-Styled Studio Dashboard
+![Studio Preview](assets/previews/preview_studio.png)
 
 ### 3. Application Mascot Icon
 <p align="center">
@@ -97,14 +98,14 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 
 ---
 
-## Featured Wallpapers (All-Custom Selection)
+## Display Modes
 
-1. **Kaede to Suzu The Animation** — Maid Twins Anime (*1920x1080 Full HD*)
-2. **Whisper Me a Love Song** — *Sasayaku You ni Koi wo Utau* (Yori & Himari Romance)
-3. **Sakura Blossom Minimal** — Soft Japanese Cherry Blossom Scenery
-4. **Pastel Sunset Clouds** — Relaxing Evening Horizon
-5. **Discord-Chan Neko Mascot** — Clean Minimalist Dark Anime Wallpaper
-6. **Custom Manual Picker** — Browse and apply any picture from your PC or web!
+1. **Anime Wallpaper Mode**
+   Select from curated high-resolution anime presets (*Kaede to Suzu*, *Whisper Me a Love Song*, *Sakura Minimal*, *Pastel Clouds*, *Neko Mascot*) or browse ANY image file on your computer with real-time thumbnail preview.
+2. **See-Through Window Transparency Mode**
+   Makes Discord's window transparent so applications and your desktop behind Discord are visible with an adjustable acrylic darkness tint.
+3. **Vanilla Discord Client**
+   Instantly turn off custom theming to use standard native Discord appearance.
 
 ---
 
@@ -116,20 +117,6 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 | `Ctrl + S` | Save & Instantly Apply Theme to Discord |
 | `Ctrl + R` | Restart Discord with Anti-Crash Safe Flags |
 | `Ctrl + Q` | Quit Studio |
-
----
-
-## Color Palette Presets
-
-Switch palettes instantly inside the Studio GUI or via Command Palette:
-- **Sakura Soft** (`#ff85a2` / `#fbcfe8`) - Default romantic pastel pink
-- **Strawberry Rose** (`#fb7185` / `#fecdd3`) - Vibrant berry pink
-- **Pastel Peach** (`#f472b6` / `#fce7f3`) - Warm comforting blush
-- **Cotton Candy** (`#f49ac2` / `#fed7aa`) - Sweet candy blend
-- **Cherry Blossom** (`#fda4af` / `#fff1f2`) - Spring blossoms
-- **Lavender Yuri** (`#c084fc` / `#e9d5ff`) - Dreamy Yori violet
-- **Dark Black-Pink** (`#ff7597` / `#18141c`) - Sleek high-contrast dark aesthetic
-- **All-Custom Hex Picker** - Select any primary and secondary hex colors
 
 ---
 
@@ -147,10 +134,10 @@ Switch palettes instantly inside the Studio GUI or via Command Palette:
 </p>
 
 ### Community & Contributions
-We welcome contributions from everyone! Read our [Contributing Guidelines](CONTRIBUTING.md) to get involved:
+We welcome contributions from everyone! Read our [Contributing Guidelines](CONTRIBUTING.md) and [Wiki Documentation](wiki/Home.md) to get involved:
 - **Star this repository** if you enjoy the project!
 - **Submit Anime Wallpapers:** Add high-definition wallpapers into `assets/wallpapers/`.
-- **Add Color Palettes:** Propose new color combinations in `src/studio.py`.
+- **Create Extensions:** Package custom CSS add-ons into `.zip` files.
 - **Report Issues:** Open an [Issue on GitHub](https://github.com/myzert/discord-chan/issues).
 
 <p align="center">

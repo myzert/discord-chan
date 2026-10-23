@@ -6,11 +6,11 @@
   <img src="assets/icons/discord-neko.png" width="96" height="96" alt="Discord-Chan Mascot Logo" style="border-radius: 20px;" />
 </p>
 
-<h1 align="center">Discord-Chan Studio: Universal Anime Theme & Control Center</h1>
+<h1 align="center">Discord-Chan Studio: Universal Anime Theme & Extension Center</h1>
 
 <p align="center">
-  <b>Panel Kontrol Resmi Bergaya Discord Client & Pengatur Tema Anime (Linux & Windows)</b><br>
-  <i>Menampilkan Kaede to Suzu & Whisper Me a Love Song • Wallpaper All-Custom • Engine Zero-Lag • Setup Instan 1-Klik • GPLv3</i>
+  <b>Panel Kontrol Resmi Bergaya Discord Client, Tema All-Custom & Ekstensi Modular (Linux & Windows)</b><br>
+  <i>Saklar Master (ON/OFF) • Mode Transparan Tembus Aplikasi Belakang & Anime • Kolom Chat 100% Kaca • Slider Kelengkungan UI Kotak • Ekstensi Modular ZIP • Ekspor/Impor Tema • GPLv3</i>
 </p>
 
 <p align="center">
@@ -23,7 +23,7 @@
 </p>
 
 <p align="center">
-  <b>Bahasa:</b> <a href="README.md"><b>English</b></a> | <b>Bahasa Indonesia</b>
+  <b>Bahasa:</b> <a href="README.md"><b>English</b></a> | <b>Bahasa Indonesia</b> | <a href="wiki/Home.md"><b>Wiki Dokumentasi</b></a>
 </p>
 
 ---
@@ -34,7 +34,7 @@
 > **Discord-Chan adalah 100% Tema Visual CSS Client-Side & BetterDiscord.**
 > - **BUKAN MODIFIKASI FITUR NITRO BERBAYAR:** Proyek ini **TIDAK membuka fitur Nitro berbayar** (tidak ada spoof server boost, banner animasi berbayar, dll).
 > - **TIDAK MENGUBAH SERVER / BINARY:** Tidak menyentuh token user, tidak ada scraper, dan aman dari pelanggaran API Discord.
-> - **100% AMAN DARI BANNED & SESUAI ATURAN (ToS):** Hanya mengubah tampilan visual di komputer kamu sendiri (warna, wallpaper anime, transparansi, icon aplikasi, dan foto profil chat yang rapi) melalui injeksi tema standar BetterDiscord.
+> - **100% AMAN DARI BANNED & SESUAI ATURAN (ToS):** Hanya mengubah tampilan visual di komputer kamu sendiri (warna, transparansi kaca, wallpaper anime, dan foto profil chat yang rapi) melalui BetterDiscord.
 
 ---
 
@@ -64,29 +64,30 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 
 ---
 
-## Fitur-Fitur Unggulan
+## Fitur-Fitur Unggulan Terbaru
 
 | Fitur | Penjelasan |
 | :--- | :--- |
-| **Panel Studio Bergaya Discord Client** | Didesain otentik mengikuti antarmuka Discord Dark (`#1e1f22`, `#2b2d31`, `#313338`) dengan navigasi 3-kolom, tanpa elemen kaku atau tampilan AI buatan. |
-| **Manajer Wallpaper All-Custom** | Bebas memilih wallpaper tanpa terpaku pada 1 anime! Tersedia preset anime (*Kaede to Suzu*, *Whisper Me a Love Song*, *Sakura*, *Pastel Clouds*) atau pilih manual gambar apa saja (JPG, PNG, WEBP, GIF) dengan thumbnail langsung. |
-| **Engine Zero-Lag (Tanpa Shadow Berat)** | Menghapus efek `box-shadow` dan `backdrop-filter: blur` yang bikin berat. Menjamin 60 FPS halus di Linux maupun Windows. |
-| **Pengaturan Transparansi Kaca (Glass UI)** | Slider mandiri untuk tingkat gelap background, transparansi sidebar channel, dan area pesan chat. |
-| **Anti-Nabrak (Top-Spacing Clearance)** | Jarak bersih di bagian atas agar Discord tidak bertabrakan dengan panel taskbar XFCE / GNOME / Windows. |
-| **Perbaikan Foto Profil Chat (Avatar Guard)** | Menjaga grid posisi avatar Discord asli agar tidak rusak, terpotong, atau bergeser saat chat. |
-| **Voice Call & Profile Modern** | Kotak peserta call transparan (glass tiles), pilihan warna cincin speaking (Sakura Pink, Hijau Emerald, Cyan Neon, Violet Glow), dan popout modal profil estetik. |
-| **Icon Maskot Asli Rapi** | Icon aplikasi bergaya squircle alami dari maskot Neko asli tanpa garis tepi kontras dan tanpa menumpuk shortcut di Desktop. |
-| **Command Palette Pintas (`Ctrl+Shift+P`)** | Buka Studio langsung dari dalam Discord atau desktop menggunakan tombol pintas `Ctrl+Shift+P`. |
+| **Saklar Master Tema (ON / OFF)** | Nyalakan atau matikan tema secara instan dengan 1 tombol. Saat dimatikan (OFF), Discord langsung kembali ke tampilan asli bawaan. |
+| **3 Pilihan Mode Tampilan** | Pilih antara **Mode Wallpaper Anime**, **Mode Transparan Tembus Aplikasi Belakang** (bisa melihat window & desktop di belakang Discord), atau **Vanilla Discord Bawaan**. |
+| **Kolom Chat 100% Transparan Kaca** | Memperbaiki latar abu-abu padat pada kolom chat dengan menimpa token desain Discord. Wallpaper anime terlihat penuh tanpa tertutup. |
+| **Kolom Kirim Chat Bergaya Asli** | Kotak pengetikan pesan dirancang seperti Discord asli dengan efek kaca transparan, border aksen saat mengetik, dan tombol lampiran rapi. |
+| **Pengatur Kelengkungan Sudut UI (Radius)** | Slider kelengkungan dari tajam `0px` hingga membulat `24px` untuk kotak chat, kartu embed, modal popout, dan tombol. |
+| **Perbaikan Warna & Bayangan Embed** | Menghilangkan bayangan kotor yang bikin lag. Kartu embed tampil estetik dengan kaca transparan dan garis aksen warna vertikal di kiri. |
+| **Sistem Ekstensi Modular ZIP (Format Chrome)** | Pasang plugin/add-on tambahan berformat `.zip` (`manifest.json` + `style.css`), atau buat template ekstensi baru dengan 1 klik. |
+| **Ekspor & Impor Tema (.zip Bundle)** | Bagikan hasil custom temamu ke teman! Mengekspor semua nilai slider, warna hex, dan wallpaper bawaan ke dalam 1 file `.zip`. |
+| **Engine Zero-Lag & Anti-Collision** | Menghapus efek `box-shadow` dan `backdrop-filter: blur` yang bikin berat. Dilengkapi jarak atas (`top-spacing`) agar tidak nabrak taskbar. |
+| **Pintasan Command Palette (`Ctrl+Shift+P`)** | Buka panel kontrol Studio langsung dari dalam Discord atau desktop kapan saja dengan `Ctrl+Shift+P`. |
 
 ---
 
 ## Tangkapan Layar & Contoh Tampilan
 
-### 1. Panel Kontrol Studio Bergaya Discord
-![Studio Preview](assets/previews/preview_studio.png)
-
-### 2. Tampilan Discord Tema Anime
+### 1. Tampilan Discord Tema Anime Kaca
 ![Discord Theme Preview](assets/previews/preview_discord.png)
+
+### 2. Panel Kontrol Studio Bergaya Discord
+![Studio Preview](assets/previews/preview_studio.png)
 
 ### 3. Icon Maskot Aplikasi
 <p align="center">
@@ -97,14 +98,14 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 
 ---
 
-## Pilihan Wallpaper Anime (All-Custom)
+## 3 Mode Tampilan Discord
 
-1. **Kaede to Suzu The Animation** — Maid Twins Anime (*1920x1080 Full HD*)
-2. **Whisper Me a Love Song** — *Sasayaku You ni Koi wo Utau* (Romansa Yuri Yori & Himari)
-3. **Sakura Blossom Minimal** — Pemandangan Bunga Sakura Pastel Jepang
-4. **Pastel Sunset Clouds** — Nuansa Awan Senja Menenangkan
-5. **Discord-Chan Neko Mascot** — Wallpaper Minimalist Dark Anime
-6. **Pemilih Manual Gambar Kustom** — Pilih file gambar apa saja dari komputermu!
+1. **Mode Wallpaper Anime**
+   Pilih dari preset anime resolusi tinggi (*Kaede to Suzu The Animation*, *Whisper Me a Love Song*, *Sakura Minimal*, *Pastel Clouds*, *Neko Mascot*) atau pilih gambar apa saja dari komputermu dengan pratinjau thumbnail langsung.
+2. **Mode Transparan Tembus Aplikasi Belakang**
+   Menjadikan jendela Discord transparan sehingga aplikasi lain (browser, terminal, editor) dan desktop di belakang Discord terlihat jelas dengan tingkat kegelapan yang bisa diatur.
+3. **Mode Vanilla Discord Bawaan**
+   Matikan tema custom secara instan untuk kembali ke tampilan asli Discord biasa tanpa uninstall.
 
 ---
 
@@ -116,20 +117,6 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 | `Ctrl + S` | Simpan & Terapkan Tema langsung ke Discord |
 | `Ctrl + R` | Restart Discord dengan flag aman anti-crash |
 | `Ctrl + Q` | Keluar dari Discord-Chan Studio |
-
----
-
-## Pilihan Palet Warna Siap Pakai
-
-Ganti palet warna secara instan melalui Studio GUI atau Command Palette:
-- **Sakura Soft** (`#ff85a2` / `#fbcfe8`) - Nuansa pink lembut romantis (Bawaan)
-- **Strawberry Rose** (`#fb7185` / `#fecdd3`) - Warna merah muda cerah segar
-- **Pastel Peach** (`#f472b6` / `#fce7f3`) - Nuansa peach hangat
-- **Cotton Candy** (`#f49ac2` / `#fed7aa`) - Perpaduan warna permen manis
-- **Cherry Blossom** (`#fda4af` / `#fff1f2`) - Bunga musim semi Jepang
-- **Lavender Yuri** (`#c084fc` / `#e9d5ff`) - Nuansa ungu elegan karakter Yori
-- **Dark Black-Pink** (`#ff7597` / `#18141c`) - Tema gelap kontras modern
-- **Pemilih Hex Kustom** - Bebas pilih kode warna heksadesimal apa saja
 
 ---
 
@@ -148,10 +135,10 @@ Ganti palet warna secara instan melalui Studio GUI atau Command Palette:
 
 ### Panduan Kontribusi Komunitas
 Proyek ini sangat terbuka untuk semua pecinta anime, desainer tema, dan developer!
-Baca panduan lengkap di [CONTRIBUTING.md](CONTRIBUTING.md):
+Baca panduan lengkap di [CONTRIBUTING.md](CONTRIBUTING.md) dan [Wiki Dokumentasi](wiki/Home.md):
 - **Beri Star pada repository ini** di pojok kanan atas GitHub!
 - **Kirim Wallpaper Anime Baru:** Tambahkan wallpaper anime 16:9 beresolusi tinggi ke folder `assets/wallpapers/`.
-- **Kirim Palet Warna Estetik Baru:** Usulkan kombinasi warna baru pada `src/studio.py`.
+- **Buat Ekstensi Baru:** Bungkus custom CSS tambahan ke dalam paket `.zip`.
 - **Laporkan Kendala atau Saran:** Buat [Issue baru di GitHub](https://github.com/myzert/discord-chan/issues).
 
 <p align="center">

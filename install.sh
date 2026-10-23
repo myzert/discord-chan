@@ -148,7 +148,7 @@ for app_dir in "$DISCORD_CONFIG_DIR"/app-*; do
             cat << 'EOF' > "$app_dir/Discord"
 #!/bin/bash
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-exec "$DIR/Discord.real" --no-sandbox --disable-gpu "$@"
+exec "$DIR/Discord.real" --no-sandbox --disable-gpu --enable-transparent-visuals "$@"
 EOF
             chmod +x "$app_dir/Discord"
             print_success "Anti-crash wrapper dibuat untuk $app_dir"

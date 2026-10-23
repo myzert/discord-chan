@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """
-Discord-Chan Custom: Theme Engine
-Generates ultra-lightweight, minimalist pink anime theme CSS for BetterDiscord.
-Optimized for 0 lag, zero heavy box-shadows, fixed chat avatars, top-spacing clearance,
-and smooth customizable translucency.
+Discord-Chan Custom: Advanced Universal Theme Engine
+Generates ultra-lightweight, customizable Discord theme CSS for BetterDiscord.
+Supports:
+- Master Toggle (ON / OFF)
+- 3 Theme Modes: Anime Wallpaper, See-Through Window Transparency, or Vanilla Discord
+- Full Chat Column Translucency & Native Styled Chat Input Box
+- Customizable UI Corner Radius (0px to 24px)
+- Fixed Embed Cards (clean translucent glass, no muddy shadows)
+- Anti-Collision Window Clearance (Top Spacing)
+- Zero-Lag Engine & Chat Avatar Grid Guard
+Licensed under GNU General Public License v3.0 (GPLv3).
 """
 
 import os
@@ -16,25 +23,31 @@ SETTINGS_FILE = os.path.join(BD_DIR, "anime_theme_settings.json")
 THEMES_DIR = os.path.join(BD_DIR, "themes")
 THEME_FILE = os.path.join(THEMES_DIR, "WhisperMeALoveSong.theme.css")
 REPO_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DEFAULT_WALLPAPER = os.path.join(REPO_DIR, "assets", "wallpapers", "1_whisper_me_a_love_song.jpg")
+DEFAULT_WALLPAPER = os.path.join(REPO_DIR, "assets", "wallpapers", "kaede_to_suzu.webp")
 
 DEFAULT_SETTINGS = {
+    "theme_enabled": True,
+    "theme_mode": "anime_wallpaper",  # "anime_wallpaper", "window_transparent", "vanilla_discord"
     "wallpaper_id": "kaede_to_suzu",
-    "wallpaper_path": os.path.join(REPO_DIR, "assets", "wallpapers", "kaede_to_suzu.webp"),
-    "wallpaper_opacity": 0.80,
-    "sidebar_opacity": 0.62,
-    "chat_opacity": 0.40,
-    "wallpaper_blur": 0,
-    "accent_color": "#ff85a2",
-    "soft_pink": "#fbcfe8",
-    "speaking_color": "#ff85a2",
-    "tile_opacity": 0.38,
-    "tile_radius": 12,
-    "profile_opacity": 0.88,
-    "top_spacing": 12,
+    "wallpaper_path": DEFAULT_WALLPAPER,
+    "wallpaper_opacity": 0.55,        # Darkness overlay for anime wallpaper (0.10 - 0.95)
+    "window_darkness": 0.40,          # Background tint for transparent window mode
+    "sidebar_opacity": 0.65,          # Sidebar glass translucency
+    "guilds_opacity": 0.82,           # Left server rail translucency
+    "chat_opacity": 0.0,              # 0.0 = completely transparent so wallpaper or window shines through
+    "chat_input_opacity": 0.72,       # Translucent chat input box
+    "embed_opacity": 0.75,            # Translucent embed cards
+    "corner_radius": 12,              # UI Corner Radius in px (0 - 24)
+    "accent_color": "#ff85a2",        # Primary accent
+    "soft_pink": "#fbcfe8",           # Secondary pastel
+    "speaking_color": "#ff85a2",      # Voice speaking glow
+    "tile_opacity": 0.35,             # Voice participant tiles
+    "tile_radius": 12,                # Voice tile corner radius
+    "profile_opacity": 0.88,          # User profile popout modal
+    "top_spacing": 12,                # Window clearance margin
     "font_family": "gg sans, 'Noto Sans', sans-serif",
-    "zero_lag": True,
-    "chat_avatar_fixed": True,
+    "zero_lag": True,                 # Strip CPU blur & shadows
+    "chat_avatar_fixed": True,        # Message avatar alignment guard
     "active_preset": "Sakura Soft"
 }
 
@@ -50,7 +63,7 @@ def load_settings():
                     for char in ["🌸", "🍓", "🍑", "🍭", "🌺", "💜", "🖤", "✨", "🎀"]:
                         res["active_preset"] = res["active_preset"].replace(char, "")
                     res["active_preset"] = res["active_preset"].strip()
-                # Verify wallpaper path exists, else fallback to kaede or whisper
+                # Verify wallpaper path exists, else fallback
                 if "wallpaper_path" in res and not os.path.exists(res["wallpaper_path"]):
                     kaede_path = os.path.join(REPO_DIR, "assets", "wallpapers", "kaede_to_suzu.webp")
                     whisper_path = os.path.join(REPO_DIR, "assets", "wallpapers", "1_whisper_me_a_love_song.jpg")
@@ -81,6 +94,8 @@ def get_image_data_uri(file_path):
             mime = "image/png"
         elif ext == "webp":
             mime = "image/webp"
+        elif ext == "gif":
+            mime = "image/gif"
         else:
             mime = "image/jpeg"
         with open(file_path, "rb") as f:
@@ -91,42 +106,123 @@ def get_image_data_uri(file_path):
         return ""
 
 def generate_theme_css(settings):
+    # Master switch: if theme is disabled, return clean vanilla styles
+    if not settings.get("theme_enabled", True) or settings.get("theme_mode") == "vanilla_discord":
+        return """/**
+ * @name WhisperMeALoveSong
+ * @author Discord-Chan Custom Team
+ * @version 2.6.0
+ * @description Vanilla Discord Mode (Theme Disabled). Clean native Discord client.
+ * @source https://github.com/myzert/discord-chan
+ */
+
+/* Theme is currently toggled OFF in Discord-Chan Studio */
+"""
+
+    mode = settings.get("theme_mode", "anime_wallpaper")
     wp_path = settings.get("wallpaper_path", "")
-    data_uri = get_image_data_uri(wp_path)
-    if not data_uri and wp_path.startswith("http"):
+    data_uri = get_image_data_uri(wp_path) if mode == "anime_wallpaper" else ""
+    if not data_uri and wp_path.startswith("http") and mode == "anime_wallpaper":
         data_uri = wp_path
 
     accent = settings.get("accent_color", "#ff85a2")
     soft_pink = settings.get("soft_pink", "#fbcfe8")
     speaking = settings.get("speaking_color", "#ff85a2")
-    wp_opacity = float(settings.get("wallpaper_opacity", 0.80))
-    sidebar_op = float(settings.get("sidebar_opacity", 0.62))
-    chat_op = float(settings.get("chat_opacity", 0.40))
-    tile_opacity = float(settings.get("tile_opacity", 0.38))
+    wp_opacity = float(settings.get("wallpaper_opacity", 0.55))
+    win_darkness = float(settings.get("window_darkness", 0.40))
+    sidebar_op = float(settings.get("sidebar_opacity", 0.65))
+    guilds_op = float(settings.get("guilds_opacity", 0.82))
+    chat_input_op = float(settings.get("chat_input_opacity", 0.72))
+    embed_op = float(settings.get("embed_opacity", 0.75))
+    corner_radius = int(settings.get("corner_radius", 12))
+    tile_opacity = float(settings.get("tile_opacity", 0.35))
     tile_radius = int(settings.get("tile_radius", 12))
     profile_opacity = float(settings.get("profile_opacity", 0.88))
     top_spacing = int(settings.get("top_spacing", 12))
-    blur = int(settings.get("wallpaper_blur", 0))
+
+    # Background layer logic depending on mode
+    if mode == "window_transparent":
+        bg_wallpaper_css = """
+body, #app-mount {
+    background-color: transparent !important;
+    background: transparent !important;
+}
+#app-mount::before {
+    display: none !important;
+}
+#app-mount::after {
+    content: "" !important;
+    position: fixed !important;
+    inset: 0 !important;
+    background: rgba(12, 10, 16, """ + str(win_darkness) + """) !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+}"""
+    else:
+        bg_wallpaper_css = """
+body {
+    background-color: #120e16 !important;
+}
+#app-mount::before {
+    content: "" !important;
+    position: fixed !important;
+    inset: 0 !important;
+    background-image: var(--anime-wallpaper) !important;
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+    pointer-events: none !important;
+    z-index: -2 !important;
+}
+#app-mount::after {
+    content: "" !important;
+    position: fixed !important;
+    inset: 0 !important;
+    background: var(--bg-overlay) !important;
+    pointer-events: none !important;
+    z-index: -1 !important;
+}"""
 
     css = f"""/**
  * @name WhisperMeALoveSong
  * @author Discord-Chan Custom Team
  * @version 2.6.0
- * @description Minimalist Pink Anime Theme featuring Whisper Me a Love Song (Sasakoi). Zero lag, fixed chat avatars, top-spacing clearance, customizable translucency, and sleek voice call UI.
+ * @description All-Custom Anime & Glass Transparency Theme for Discord. Zero-lag, 100% translucent chat column, customizable corner radius, and safe client-side CSS.
  * @source https://github.com/myzert/discord-chan
  */
 
-:root {{
-    --theme-name: "Whisper Me a Love Song (Minimalist Pink Edition)";
+:root,
+.theme-dark,
+.theme-light {{
+    --theme-name: "Discord-Chan All-Custom Glass Edition";
     --anime-wallpaper: url('{data_uri}');
     
-    /* Aesthetic Pink Color Palette */
+    /* Aesthetic Color Palette */
     --accent-pink: {accent};
     --accent-pink-soft: {soft_pink};
     --accent-pink-hover: #ff9cb3;
     --accent-pink-active: #fa6d8f;
-    --accent-pink-dim: rgba(255, 133, 162, 0.14);
+    --accent-pink-dim: rgba(255, 133, 162, 0.16);
     --accent-pink-glow: rgba(255, 133, 162, 0.35);
+
+    /* UI Corner Radius */
+    --ui-corner-radius: {corner_radius}px;
+
+    /* Discord Design System Tokens (Full Chat & Scroller Translucency) */
+    --background-primary: transparent !important;
+    --background-secondary: rgba(24, 18, 30, {sidebar_op}) !important;
+    --background-secondary-alt: rgba(18, 14, 22, 0.78) !important;
+    --background-tertiary: rgba(14, 10, 18, {guilds_op}) !important;
+    --background-accent: {accent} !important;
+    --background-floating: rgba(26, 20, 32, 0.95) !important;
+    --channeltextarea-background: rgba(18, 14, 22, {chat_input_op}) !important;
+    --chat-background: transparent !important;
+    --chat-background-default: transparent !important;
+    --bg-base-primary: transparent !important;
+    --bg-base-secondary: rgba(24, 18, 30, {sidebar_op}) !important;
+    --bg-base-tertiary: rgba(14, 10, 18, {guilds_op}) !important;
+    --bg-surface-raised: rgba(22, 17, 28, {embed_op}) !important;
+    --bg-surface-overlay: rgba(26, 20, 32, 0.95) !important;
 
     /* Voice & Speaking Indicators */
     --speaking-glow: {speaking};
@@ -136,17 +232,16 @@ def generate_theme_css(settings):
     /* User Profile Card Styling */
     --profile-card-bg: rgba(22, 17, 28, {profile_opacity});
 
-    /* Translucent Background Overlays (Clean Flat Alpha - Zero Shadow Lag) */
-    --bg-overlay: rgba(18, 14, 22, {wp_opacity});
-    --bg-panels: rgba(24, 18, 29, 0.70);
-    --bg-darker: rgba(14, 10, 18, 0.82);
+    /* Translucent Background Overlays */
+    --bg-overlay: rgba(14, 11, 18, {wp_opacity});
+    --bg-panels: rgba(24, 18, 29, 0.75);
+    --bg-darker: rgba(14, 10, 18, {guilds_op});
     --bg-sidebar: rgba(20, 15, 24, {sidebar_op});
-    --bg-chat-layer: rgba(18, 14, 22, {chat_op});
-    --bg-floating: rgba(28, 21, 34, 0.94);
+    --bg-floating: rgba(28, 21, 34, 0.95);
 
-    /* Borders */
-    --border-subtle: rgba(255, 133, 162, 0.18);
-    --border-focused: rgba(255, 133, 162, 0.45);
+    /* Clean Borders */
+    --border-subtle: rgba(255, 133, 162, 0.22);
+    --border-focused: rgba(255, 133, 162, 0.55);
 
     /* Text Colors */
     --text-pure: #ffffff;
@@ -167,7 +262,6 @@ def generate_theme_css(settings):
     background: transparent !important;
 }}
 
-/* Clean separation for top bar and headers */
 .typeWindows__421ed,
 .titleBar__421ed,
 [class*="titleBar_"] {{
@@ -177,33 +271,9 @@ def generate_theme_css(settings):
 }}
 
 /* ========================================================
-   GLOBAL ZERO-LAG ANIME WALLPAPER
+   GLOBAL ZERO-LAG BACKGROUND (ANIME OR TRANSPARENT WINDOW)
    ======================================================== */
-body {{
-    background-color: #120e16 !important;
-}}
-
-#app-mount::before {{
-    content: "" !important;
-    position: fixed !important;
-    inset: 0 !important;
-    background-image: var(--anime-wallpaper) !important;
-    background-size: cover !important;
-    background-position: center center !important;
-    background-repeat: no-repeat !important;
-    pointer-events: none !important;
-    z-index: -2 !important;
-    {'filter: blur(' + str(blur) + 'px) !important;' if blur > 0 else ''}
-}}
-
-#app-mount::after {{
-    content: "" !important;
-    position: fixed !important;
-    inset: 0 !important;
-    background: var(--bg-overlay) !important;
-    pointer-events: none !important;
-    z-index: -1 !important;
-}}
+{bg_wallpaper_css}
 
 /* ========================================================
    ZERO-LAG ENGINE: REMOVE HEAVY BOX-SHADOWS & CPU BLURS
@@ -216,7 +286,7 @@ body {{
 }}
 
 /* ========================================================
-   CONTAINER TRANSPARENCY & LAYOUT HARMONY
+   CHAT COLUMN & CONTAINER TRANSPARENCY (FIXED ZERO SOLID GREY)
    ======================================================== */
 .app__160d8,
 .bg__960e4,
@@ -239,11 +309,17 @@ body {{
 [class*="chat_"],
 [class*="chatContent_"],
 [class*="messagesWrapper_"],
-[class*="pageWrapper_"] {{
+[class*="scroller_"],
+[class*="scrollerInner_"],
+[class*="scrollerContent_"],
+[class*="scrollerBase_"],
+[class*="pageWrapper_"],
+main[class*="chatContent_"] {{
     background: transparent !important;
+    background-color: transparent !important;
 }}
 
-/* Left Server List */
+/* Left Server List (Guilds Rail) */
 .guilds__357e6,
 [class*="guilds_"] {{
     background: var(--bg-darker) !important;
@@ -272,12 +348,6 @@ body {{
     padding: 0 16px !important;
 }}
 
-/* Chat Message Background Layer */
-.chat__52833,
-[class*="chat_"] {{
-    background: var(--bg-chat-layer) !important;
-}}
-
 /* Bottom User Bar */
 .panels__357e6,
 .container_b7e1cb,
@@ -297,12 +367,55 @@ body {{
 }}
 
 /* ========================================================
-   CHAT MESSAGE AREA & AVATAR ALIGNMENT PROTECTION
+   CHAT INPUT BAR (KOLOM KIRIM CHAT - NATIVE DISCORD STYLE)
+   ======================================================== */
+[class*="channelBottom_"],
+form[class*="form_"] {{
+    background: transparent !important;
+    border-top: none !important;
+}}
+
+.channelTextArea__74017,
+.scrollableContainer__74017,
+[class*="channelTextArea_"],
+[class*="scrollableContainer_"] {{
+    background: var(--channeltextarea-background) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-radius: var(--ui-corner-radius) !important;
+    margin-bottom: 16px !important;
+    transition: border-color 0.2s ease, background 0.2s ease !important;
+}}
+
+.channelTextArea__74017:focus-within,
+[class*="channelTextArea_"]:focus-within {{
+    border-color: var(--accent-pink) !important;
+    background: rgba(24, 18, 30, 0.88) !important;
+}}
+
+/* Chat Text Input Action Buttons */
+[class*="buttons_"] [class*="button_"] {{
+    color: var(--accent-pink-soft) !important;
+    opacity: 0.85 !important;
+    transition: opacity 0.2s ease, color 0.15s ease !important;
+}}
+[class*="buttons_"] [class*="button_"]:hover {{
+    opacity: 1 !important;
+    color: var(--accent-pink) !important;
+}}
+
+/* Placeholder and typed text */
+[class*="placeholder_"],
+[class*="textArea_"] {{
+    color: #dbdee1 !important;
+}}
+
+/* ========================================================
+   CHAT MESSAGES & AVATAR ALIGNMENT PROTECTION
    ======================================================== */
 [class*="message__"] {{
     background: transparent !important;
     transition: background 0.15s ease !important;
-    border-radius: 6px !important;
+    border-radius: var(--ui-corner-radius) !important;
     margin: 1px 8px !important;
 }}
 
@@ -310,7 +423,7 @@ body {{
     background: var(--accent-pink-dim) !important;
 }}
 
-/* Avatar subtle pink accent ring & fixed alignment guard */
+/* Avatar subtle pink ring & fixed alignment guard */
 [class*="avatar__"],
 [class*="avatarDecoration__"] {{
     border-radius: 50% !important;
@@ -329,19 +442,31 @@ body {{
     color: var(--accent-pink-soft) !important;
 }}
 
-/* Chat Text Input Bar */
-.channelTextArea__74017,
-.scrollableContainer__74017,
-[class*="channelTextArea_"],
-[class*="scrollableContainer_"] {{
-    background: var(--bg-darker) !important;
-    border: 1px solid var(--border-focused) !important;
-    border-radius: 12px !important;
-    margin-bottom: 16px !important;
+/* ========================================================
+   EMBEDS FIX: NO MUDDY SHADOWS & CLEAN TRANSLUCENT CARDS
+   ======================================================== */
+[class*="embedFull_"],
+[class*="embed_"],
+.embed__734c5 {{
+    background: rgba(22, 17, 28, {embed_op}) !important;
+    border: 1px solid var(--border-subtle) !important;
+    border-left: 4px solid var(--accent-pink) !important;
+    border-radius: var(--ui-corner-radius) !important;
+    box-shadow: none !important;
+    filter: none !important;
+    text-shadow: none !important;
 }}
-.channelTextArea__74017:focus-within,
-[class*="channelTextArea_"]:focus-within {{
-    border-color: var(--accent-pink) !important;
+
+[class*="embedAuthor_"],
+[class*="embedTitle_"],
+[class*="embedFieldName_"] {{
+    color: var(--accent-pink-soft) !important;
+    font-weight: 600 !important;
+}}
+
+[class*="embedDescription_"],
+[class*="embedFieldValue_"] {{
+    color: #f2f3f5 !important;
 }}
 
 /* ========================================================
@@ -355,7 +480,7 @@ body {{
 [class*="tile_"] {{
     background: var(--voice-tile-bg) !important;
     border: 1px solid var(--border-subtle) !important;
-    border-radius: var(--voice-tile-radius) !important;
+    border-radius: var(--ui-corner-radius) !important;
     transition: border-color 0.2s ease !important;
 }}
 
@@ -367,7 +492,7 @@ body {{
     outline-offset: 2px !important;
 }}
 
-/* Bottom Floating Call Action Bar (Pill Shape) */
+/* Bottom Floating Call Action Bar */
 [class*="actionButtons_"],
 [class*="bottomControls_"] {{
     background: rgba(22, 17, 28, 0.90) !important;
@@ -392,17 +517,11 @@ body {{
 [class*="fullSizeProfile_"] {{
     background: var(--profile-card-bg) !important;
     border: 1px solid var(--border-focused) !important;
-    border-radius: 18px !important;
+    border-radius: var(--ui-corner-radius) !important;
 }}
 
 [class*="userProfileInner_"] {{
     background: transparent !important;
-}}
-
-/* Profile Avatar */
-[class*="avatarPositionNormal_"] [class*="avatar_"] {{
-    outline: 3px solid var(--accent-pink) !important;
-    outline-offset: 2px !important;
 }}
 
 /* Roles badges */
@@ -413,13 +532,13 @@ body {{
 }}
 
 /* ========================================================
-   MODALS, SEARCH & CONTEXT MENUS
+   MENUS & SCROLLBARS
    ======================================================== */
 .menu_c1e9c4,
 [class*="menu_"] {{
     background: var(--bg-floating) !important;
     border: 1px solid var(--border-subtle) !important;
-    border-radius: 10px !important;
+    border-radius: var(--ui-corner-radius) !important;
 }}
 
 .item_c1e9c4:hover,
@@ -428,7 +547,6 @@ body {{
     color: #fff !important;
 }}
 
-/* Scrollbar */
 ::-webkit-scrollbar-thumb {{
     background: var(--accent-pink-dim) !important;
     border-radius: 8px !important;
@@ -464,7 +582,9 @@ def apply_theme(settings=None):
         if os.path.exists(themes_json_path):
             with open(themes_json_path, "r") as f:
                 t_data = json.load(f)
-        t_data["WhisperMeALoveSong"] = True
+        # Enable or disable depending on theme_enabled
+        is_enabled = settings.get("theme_enabled", True)
+        t_data["WhisperMeALoveSong"] = is_enabled
         with open(themes_json_path, "w") as f:
             json.dump(t_data, f, indent=2)
     except Exception as e:

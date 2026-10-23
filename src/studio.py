@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 """
 Discord-Chan Studio: Official Discord Client Styled Dashboard
-Designed to mirror Discord's native dark interface layout (Guilds rail, Channels sidebar, and Chat cards).
-NO emojis in panel UI as requested. Vector SVG logo, 1-Click Instant Setup,
-All-Custom wallpaper manager with live thumbnails, and full translucency controls.
+Universal Anime Theme Customizer & Extension Manager for Discord.
+Features:
+- Master Theme Toggle (ON / OFF)
+- 3 Modes: Anime Wallpaper, See-Through Window Transparency, Vanilla Discord
+- 100% Translucent Chat Column & Native Styled Chat Input Box
+- Customizable UI Corner Radius (0px to 24px)
+- Fixed Embed Cards (no muddy shadows, crisp colored border)
+- All-Custom Wallpaper Manager with Live Thumbnails & Manual File Browser
+- Export & Import Custom Themes (.zip format)
+- Modular Plugin / Extension System (.zip Chrome-style packages)
+- Safe Client-Side CSS, Anti-Collision Top Spacing, Zero-Lag Engine
 Licensed under GNU General Public License v3.0 (GPLv3).
 """
 
@@ -23,6 +31,8 @@ import theme_engine
 import bd_injector
 import icon_manager
 import plugins_manager
+import theme_packager
+import extensions_system
 
 # Discord Official Dark Palette
 C_GUILDS    = "#1e1f22"
@@ -97,27 +107,32 @@ class DiscordStyledStudio:
     def __init__(self, root):
         self.root = root
         self.root.title("Discord-Chan Studio")
-        self.root.geometry("1020x750")
-        self.root.minsize(920, 640)
+        self.root.geometry("1040x760")
+        self.root.minsize(940, 650)
         self.root.configure(bg=C_GUILDS)
 
         self.settings = theme_engine.load_settings()
-        self.active_tab = "wallpapers"
+        self.active_tab = "mode"
         self.thumb_cache = {}
 
-        # Initialize all persistent setting variables once
         self.init_variables()
         self.load_app_icons()
         self.build_discord_shell()
         self.setup_hotkeys()
-        self.show_tab("wallpapers")
+        self.show_tab("mode")
 
     def init_variables(self):
+        self.theme_enabled_var = tk.BooleanVar(value=bool(self.settings.get("theme_enabled", True)))
+        self.theme_mode_var = tk.StringVar(value=self.settings.get("theme_mode", "anime_wallpaper"))
         self.custom_path_var = tk.StringVar(value=self.settings.get("wallpaper_path", ""))
-        self.wp_opacity_var = tk.DoubleVar(value=float(self.settings.get("wallpaper_opacity", 0.80)))
-        self.sidebar_op_var = tk.DoubleVar(value=float(self.settings.get("sidebar_opacity", 0.62)))
-        self.chat_op_var = tk.DoubleVar(value=float(self.settings.get("chat_opacity", 0.40)))
-        self.tile_op_var = tk.DoubleVar(value=float(self.settings.get("tile_opacity", 0.38)))
+        self.wp_opacity_var = tk.DoubleVar(value=float(self.settings.get("wallpaper_opacity", 0.55)))
+        self.win_darkness_var = tk.DoubleVar(value=float(self.settings.get("window_darkness", 0.40)))
+        self.sidebar_op_var = tk.DoubleVar(value=float(self.settings.get("sidebar_opacity", 0.65)))
+        self.guilds_op_var = tk.DoubleVar(value=float(self.settings.get("guilds_opacity", 0.82)))
+        self.chat_input_op_var = tk.DoubleVar(value=float(self.settings.get("chat_input_opacity", 0.72)))
+        self.embed_op_var = tk.DoubleVar(value=float(self.settings.get("embed_opacity", 0.75)))
+        self.corner_radius_var = tk.IntVar(value=int(self.settings.get("corner_radius", 12)))
+        self.tile_op_var = tk.DoubleVar(value=float(self.settings.get("tile_opacity", 0.35)))
         self.tile_rad_var = tk.IntVar(value=int(self.settings.get("tile_radius", 12)))
         self.prof_op_var = tk.DoubleVar(value=float(self.settings.get("profile_opacity", 0.88)))
         self.top_spacing_var = tk.IntVar(value=int(self.settings.get("top_spacing", 12)))
@@ -157,7 +172,6 @@ class DiscordStyledStudio:
         if path and os.path.exists(path):
             try:
                 im = Image.open(path)
-                # Resize keeping aspect ratio, crop center
                 w, h = im.size
                 target_ratio = width / height
                 current_ratio = w / h
@@ -177,7 +191,6 @@ class DiscordStyledStudio:
             except Exception:
                 pass
 
-        # Placeholder fallback
         blank = Image.new("RGBA", (width, height), (35, 36, 40, 255))
         photo = ImageTk.PhotoImage(blank)
         self.thumb_cache[cache_key] = photo
@@ -201,44 +214,38 @@ class DiscordStyledStudio:
         self.guilds_bar.pack(side="left", fill="y")
         self.guilds_bar.pack_propagate(False)
 
-        # Discord white indicator pill + Guild Avatar container
+        # Active Guild Pill + Logo
         guild_item = tk.Frame(self.guilds_bar, bg=C_GUILDS, height=54)
         guild_item.pack(fill="x", pady=(10, 4))
         guild_item.pack_propagate(False)
 
-        # Active white pill on the left
         pill = tk.Frame(guild_item, bg="#ffffff", width=4, height=36)
         pill.pack(side="left", padx=(0, 4), pady=9)
 
         if self.guild_icon_photo:
             logo_btn = tk.Label(guild_item, image=self.guild_icon_photo, bg=C_GUILDS, cursor="hand2")
             logo_btn.pack(side="left", padx=(4, 0))
-            logo_btn.bind("<Button-1>", lambda e: self.show_tab("wallpapers"))
+            logo_btn.bind("<Button-1>", lambda e: self.show_tab("mode"))
         else:
             logo_lbl = tk.Label(guild_item, text="DC", font=("DejaVu Sans", 11, "bold"), bg=C_BLURPLE, fg="#fff", width=3, height=2)
             logo_lbl.pack(side="left", padx=(4, 0))
 
-        # Discord pill separator
         sep = tk.Frame(self.guilds_bar, bg="#35363c", height=2, width=32)
         sep.pack(pady=4)
 
-        # Action Guild Buttons styled like Discord Server Bubbles
         self.create_guild_action("SETUP", C_BLURPLE, "#ffffff", self.run_instant_setup)
         self.create_guild_action("APPLY", C_CARD, C_TEXT_H, self.apply_theme_action)
         self.create_guild_action("RELOAD", C_CARD, C_TEXT_H, self.restart_discord_safe)
 
-        # Bottom Add Server styled placeholder
-        bot_add = tk.Label(self.guilds_bar, text="+", font=("DejaVu Sans", 14), bg=C_CARD, fg=C_GREEN,
-                           width=3, height=1, cursor="hand2")
+        bot_add = tk.Label(self.guilds_bar, text="+", font=("DejaVu Sans", 14), bg=C_CARD, fg=C_GREEN, width=3, height=1, cursor="hand2")
         bot_add.pack(side="bottom", pady=12)
         bot_add.bind("<Button-1>", lambda e: self.open_command_palette())
 
-        # 2. Channels Sidebar (Width: 235px)
-        self.sidebar = tk.Frame(self.root, bg=C_SIDEBAR, width=235)
+        # 2. Channels Sidebar (Width: 240px)
+        self.sidebar = tk.Frame(self.root, bg=C_SIDEBAR, width=240)
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
-        # Server Header Title with Discord Dropdown Arrow
         sb_header = tk.Frame(self.sidebar, bg=C_SIDEBAR, height=48, padx=14)
         sb_header.pack(fill="x")
         sb_header.pack_propagate(False)
@@ -248,35 +255,34 @@ class DiscordStyledStudio:
         arrow_lbl.pack(side="right", pady=14)
         arrow_lbl.bind("<Button-1>", lambda e: self.open_command_palette())
 
-        # Sidebar Separator
         tk.Frame(self.sidebar, bg=C_BORDER, height=1).pack(fill="x")
 
-        # Channels Container
         self.channels_frame = tk.Frame(self.sidebar, bg=C_SIDEBAR, padx=8, pady=8)
         self.channels_frame.pack(fill="both", expand=True)
 
         self.channel_buttons = {}
+        self.add_category_header("CORE & DISPLAY MODES")
+        self.add_channel_btn("mode", "theme-mode-and-toggles")
+        self.add_channel_btn("chat", "chat-and-transparency")
+
         self.add_category_header("CUSTOMIZATION")
-        self.add_channel_btn("wallpapers", "wallpapers-and-bg")
+        self.add_channel_btn("wallpapers", "wallpapers-manager")
         self.add_channel_btn("colors", "color-palette")
         self.add_channel_btn("voice", "voice-and-video")
         self.add_channel_btn("layout", "layout-and-clearance")
 
-        self.add_category_header("SYSTEM & CORE")
-        self.add_channel_btn("instant", "instant-setup-status")
-        self.add_channel_btn("plugins", "betterdiscord-plugins")
+        self.add_category_header("EXTENSIONS & PACKAGES")
+        self.add_channel_btn("packager", "export-import-themes")
+        self.add_channel_btn("extensions", "plugin-extensions-zip")
+        self.add_channel_btn("about", "contributors-and-wiki")
 
-        self.add_category_header("COMMUNITY")
-        self.add_channel_btn("about", "about-and-contributors")
-
-        # Bottom User Bar (Discord User Dock)
         self.build_user_bar()
 
         # 3. Main Content Container
         self.main_container = tk.Frame(self.root, bg=C_CONTENT)
         self.main_container.pack(side="left", fill="both", expand=True)
 
-        # Top Channel Header
+        # Top Bar
         self.top_bar = tk.Frame(self.main_container, bg=C_HEADER, height=48, padx=16)
         self.top_bar.pack(fill="x", side="top")
         self.top_bar.pack_propagate(False)
@@ -284,13 +290,12 @@ class DiscordStyledStudio:
         self.top_hash = tk.Label(self.top_bar, text="#", font=("DejaVu Sans", 13), bg=C_HEADER, fg=C_MUTED)
         self.top_hash.pack(side="left")
 
-        self.top_channel_title = tk.Label(self.top_bar, text="wallpapers-and-bg", font=("DejaVu Sans", 11, "bold"), bg=C_HEADER, fg=C_TEXT_H)
+        self.top_channel_title = tk.Label(self.top_bar, text="theme-mode-and-toggles", font=("DejaVu Sans", 11, "bold"), bg=C_HEADER, fg=C_TEXT_H)
         self.top_channel_title.pack(side="left", padx=(4, 10))
 
-        self.top_topic = tk.Label(self.top_bar, text="| Featured anime wallpapers and custom backgrounds", font=("DejaVu Sans", 9), bg=C_HEADER, fg=C_MUTED)
+        self.top_topic = tk.Label(self.top_bar, text="| Master switch, theme modes, and all-custom options", font=("DejaVu Sans", 9), bg=C_HEADER, fg=C_MUTED)
         self.top_topic.pack(side="left")
 
-        # Header action buttons
         btn_cmd = tk.Button(self.top_bar, text="Command Palette (Ctrl+Shift+P)", font=("DejaVu Sans", 8),
                             bg="#3b3e45", fg=C_TEXT_H, relief="flat", padx=10, pady=4, cursor="hand2",
                             command=self.open_command_palette)
@@ -303,7 +308,7 @@ class DiscordStyledStudio:
 
         tk.Frame(self.main_container, bg=C_BORDER, height=1).pack(fill="x")
 
-        # 4. Scrollable Content Canvas Container
+        # 4. Scrollable Canvas
         self.content_canvas = tk.Canvas(self.main_container, bg=C_CONTENT, highlightthickness=0)
         self.content_scrollbar = tk.Scrollbar(self.main_container, orient="vertical", command=self.content_canvas.yview)
         self.content_scroll = tk.Frame(self.content_canvas, bg=C_CONTENT, padx=20, pady=16)
@@ -316,7 +321,6 @@ class DiscordStyledStudio:
         self.content_canvas.pack(side="left", fill="both", expand=True)
         self.content_scrollbar.pack(side="right", fill="y")
 
-        # Mouse wheel bindings
         self.content_canvas.bind_all("<Button-4>", lambda e: self.content_canvas.yview_scroll(-1, "units"))
         self.content_canvas.bind_all("<Button-5>", lambda e: self.content_canvas.yview_scroll(1, "units"))
         self.content_canvas.bind_all("<MouseWheel>", lambda e: self.content_canvas.yview_scroll(int(-1*(e.delta/120)), "units"))
@@ -334,7 +338,6 @@ class DiscordStyledStudio:
         user_bar.pack(fill="x", side="bottom")
         user_bar.pack_propagate(False)
 
-        # Avatar container with green online dot
         av_frame = tk.Frame(user_bar, bg="#232428")
         av_frame.pack(side="left", pady=9)
 
@@ -348,7 +351,6 @@ class DiscordStyledStudio:
         tk.Label(u_info, text="myzert", font=("DejaVu Sans", 9, "bold"), bg="#232428", fg=C_TEXT_H).pack(anchor="w")
         tk.Label(u_info, text="#neko • Online", font=("DejaVu Sans", 8), bg="#232428", fg=C_GREEN).pack(anchor="w")
 
-        # Micro status buttons
         btn_opt = tk.Button(user_bar, text="[Settings]", font=("DejaVu Sans", 7), bg="#232428", fg=C_MUTED,
                             relief="flat", cursor="hand2", command=self.open_command_palette)
         btn_opt.pack(side="right", pady=14)
@@ -373,50 +375,198 @@ class DiscordStyledStudio:
             else:
                 btn.config(bg=C_SIDEBAR, fg=C_MUTED, font=("DejaVu Sans", 9))
 
-        # Clear content frame
         for w in self.content_scroll.winfo_children():
             w.destroy()
 
-        if tab_id == "wallpapers":
-            self.top_channel_title.config(text="wallpapers-and-bg")
-            self.top_topic.config(text="| Featured anime presets, manual file browser, and glass overlays")
+        if tab_id == "mode":
+            self.top_channel_title.config(text="theme-mode-and-toggles")
+            self.top_topic.config(text="| Master ON/OFF toggle, transparent window mode, and vanilla Discord")
+            self.render_mode_tab()
+        elif tab_id == "chat":
+            self.top_channel_title.config(text="chat-and-transparency")
+            self.top_topic.config(text="| Chat column translucency, native chat input bar, corner radius & embeds")
+            self.render_chat_tab()
+        elif tab_id == "wallpapers":
+            self.top_channel_title.config(text="wallpapers-manager")
+            self.top_topic.config(text="| Featured anime presets and manual all-custom image loader")
             self.render_wallpapers_tab()
         elif tab_id == "colors":
             self.top_channel_title.config(text="color-palette")
-            self.top_topic.config(text="| Configure primary accents and soft pink palettes")
+            self.top_topic.config(text="| Minimalist pastel palettes, hex pickers, and embed styling")
             self.render_colors_tab()
         elif tab_id == "voice":
             self.top_channel_title.config(text="voice-and-video")
-            self.top_topic.config(text="| Speaking rings, glass tiles, and profile modal popouts")
+            self.top_topic.config(text="| Glowing speaking indicators, participant tiles, and profile modals")
             self.render_voice_tab()
         elif tab_id == "layout":
             self.top_channel_title.config(text="layout-and-clearance")
-            self.top_topic.config(text="| Prevent header collisions, fix chat avatars, zero-lag mode")
+            self.top_topic.config(text="| Window clearance (anti-collision), zero-lag mode, avatar grid guard")
             self.render_layout_tab()
-        elif tab_id == "instant":
-            self.top_channel_title.config(text="instant-setup-status")
-            self.top_topic.config(text="| 1-Click setup, BetterDiscord injection, process manager")
-            self.render_instant_tab()
-        elif tab_id == "plugins":
-            self.top_channel_title.config(text="betterdiscord-plugins")
-            self.top_topic.config(text="| Download and toggle essential BetterDiscord plugins")
-            self.render_plugins_tab()
+        elif tab_id == "packager":
+            self.top_channel_title.config(text="export-import-themes")
+            self.top_topic.config(text="| Export and import full custom themes (.zip bundle)")
+            self.render_packager_tab()
+        elif tab_id == "extensions":
+            self.top_channel_title.config(text="plugin-extensions-zip")
+            self.top_topic.config(text="| Chrome-style extension packages (.zip), install, and create templates")
+            self.render_extensions_tab()
         elif tab_id == "about":
-            self.top_channel_title.config(text="about-and-contributors")
-            self.top_topic.config(text="| Credits, GPLv3 license, and contributor profiles")
+            self.top_channel_title.config(text="contributors-and-wiki")
+            self.top_topic.config(text="| Lead creator profile, GitHub Wiki, and contribution guide")
             self.render_about_tab()
 
         self.content_canvas.yview_moveto(0)
 
     # -------------------------------------------------------------
-    # TAB 1: WALLPAPERS (ALL-CUSTOM & PRESETS WITH THUMBNAILS)
+    # TAB 1: THEME MODES & MASTER TOGGLES
+    # -------------------------------------------------------------
+    def render_mode_tab(self):
+        c = self.content_scroll
+
+        # 1. Master Toggle Card
+        card_toggle = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_toggle.pack(fill="x", pady=(0, 14))
+
+        tk.Label(card_toggle, text="Master Theme Switch", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_toggle, text="Turn the entire custom theme ON or OFF without uninstalling:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 10))
+
+        row_t = tk.Frame(card_toggle, bg=C_CARD)
+        row_t.pack(fill="x")
+
+        is_on = self.theme_enabled_var.get()
+        btn_master = tk.Button(row_t, text="[ THEME STATUS: ACTIVE (ON) ]" if is_on else "[ THEME STATUS: DISABLED (OFF) ]",
+                               font=("DejaVu Sans", 9, "bold"), bg=C_GREEN if is_on else "#4e5058", fg="#ffffff",
+                               relief="flat", padx=16, pady=8, cursor="hand2", command=self.toggle_master_theme)
+        btn_master.pack(side="left")
+
+        tk.Label(row_t, text="Tip: When OFF, Discord renders 100% standard vanilla Discord.", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED).pack(side="left", padx=12)
+
+        # 2. Display Modes Card
+        card_modes = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_modes.pack(fill="x", pady=(0, 14))
+
+        tk.Label(card_modes, text="Discord Display Modes (All-Custom Architecture)", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_modes, text="Choose how Discord renders its background layer:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 12))
+
+        current_mode = self.theme_mode_var.get()
+
+        modes = [
+            ("anime_wallpaper", "Anime Wallpaper Mode", "Displays high-res anime art (Kaede to Suzu, Whisper Me a Love Song, or custom image)."),
+            ("window_transparent", "See-Through Window Transparency", "Transparent Discord window! Applications and desktop behind Discord can be seen."),
+            ("vanilla_discord", "Vanilla Discord Client", "Clean native dark Discord theme with zero modifications.")
+        ]
+
+        for m_id, m_name, m_desc in modes:
+            is_active = (current_mode == m_id)
+            row_m = tk.Frame(card_modes, bg=C_CARD_ALT, padx=14, pady=10)
+            row_m.pack(fill="x", pady=4)
+
+            col = tk.Frame(row_m, bg=C_CARD_ALT)
+            col.pack(side="left", fill="both", expand=True)
+            tk.Label(col, text=m_name, font=("DejaVu Sans", 9, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(anchor="w")
+            tk.Label(col, text=m_desc, font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED).pack(anchor="w", pady=(2, 0))
+
+            if is_active:
+                tk.Label(row_m, text="[ ACTIVE ]", font=("DejaVu Sans", 8, "bold"), bg=C_GREEN, fg="#ffffff", padx=12, pady=4).pack(side="right")
+            else:
+                tk.Button(row_m, text="Select Mode", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#fff",
+                          relief="flat", padx=12, pady=4, cursor="hand2", command=lambda md=m_id: self.select_display_mode(md)).pack(side="right")
+
+        # 3. Transparent Window Tint Slider (if window transparency mode)
+        card_tint = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        card_tint.pack(fill="x")
+
+        tk.Label(card_tint, text="Window Transparency Behind-Tint", font=("DejaVu Sans", 10, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_tint, text="Darkness tint applied over applications visible behind Discord:", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 6))
+
+        self.create_slider(card_tint, "Behind-Window Darkness Tint:", self.win_darkness_var, 0.10, 0.85, 0.02)
+
+    def toggle_master_theme(self):
+        new_val = not self.theme_enabled_var.get()
+        self.theme_enabled_var.set(new_val)
+        self.settings["theme_enabled"] = new_val
+        self.apply_theme_action(silent=True)
+        self.show_tab("mode")
+        status_text = "ENABLED (Active)" if new_val else "DISABLED (Vanilla Mode)"
+        messagebox.showinfo("Theme Toggle", f"Master theme is now {status_text}!")
+
+    def select_display_mode(self, mode_id):
+        self.theme_mode_var.set(mode_id)
+        self.settings["theme_mode"] = mode_id
+        if mode_id == "vanilla_discord":
+            self.settings["theme_enabled"] = False
+        else:
+            self.settings["theme_enabled"] = True
+            self.theme_enabled_var.set(True)
+        self.apply_theme_action(silent=True)
+        self.show_tab("mode")
+
+    # -------------------------------------------------------------
+    # TAB 2: CHAT COLUMN & TRANSPARENCY CONTROLS
+    # -------------------------------------------------------------
+    def render_chat_tab(self):
+        c = self.content_scroll
+
+        # 1. Chat Transparency Guarantee Card
+        card_chat = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_chat.pack(fill="x", pady=(0, 14))
+
+        tk.Label(card_chat, text="Chat Column Translucency (Full Wallpaper Visibility)", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        desc = "The chat message column is 100% translucent so your anime background or transparent desktop shines through clearly without any solid grey obstruction."
+        tk.Label(card_chat, text=desc, font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED, wraplength=640, justify="left").pack(anchor="w", pady=(2, 10))
+
+        # 2. UI Corner Radius (Lingkar UI Kotak)
+        card_radius = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        card_radius.pack(fill="x", pady=(0, 14))
+
+        tk.Label(card_radius, text="UI Corner Radius Customization (Kelengkungan Kotak)", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_radius, text="Customize the border-radius for chat input, embed cards, modals, and buttons:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 8))
+
+        row_rad = tk.Frame(card_radius, bg=C_CARD)
+        row_rad.pack(fill="x", pady=(4, 2))
+        tk.Label(row_rad, text="Corner Radius (Sharp 0px to Round 24px):", font=("DejaVu Sans", 8, "bold"), bg=C_CARD, fg=C_TEXT).pack(side="left")
+        lbl_rad_v = tk.Label(row_rad, text=f"{self.corner_radius_var.get()}px", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED)
+        lbl_rad_v.pack(side="right")
+        tk.Scale(card_radius, from_=0, to=24, orient="horizontal", variable=self.corner_radius_var,
+                 bg=C_CARD, fg=C_TEXT_H, troughcolor=C_CARD_ALT, highlightthickness=0, showvalue=0,
+                 command=lambda val: lbl_rad_v.config(text=f"{int(val)}px")).pack(fill="x")
+
+        # 3. Translucency Sliders (Chat Input, Embeds, Sidebar, Guilds)
+        card_sliders = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        card_sliders.pack(fill="x")
+
+        tk.Label(card_sliders, text="Component Glass Opacity Sliders", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_sliders, text="Independent opacity levels for every Discord UI layer:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 8))
+
+        self.create_slider(card_sliders, "Chat Input Text Box Opacity:", self.chat_input_op_var, 0.20, 0.95, 0.02)
+        self.create_slider(card_sliders, "Embed Cards Opacity (Clean, No Shadow):", self.embed_op_var, 0.20, 0.95, 0.02)
+        self.create_slider(card_sliders, "Channels Sidebar Translucency:", self.sidebar_op_var, 0.20, 0.95, 0.02)
+        self.create_slider(card_sliders, "Server Rail (Guilds) Opacity:", self.guilds_op_var, 0.40, 0.98, 0.02)
+
+    def create_slider(self, parent, title, var, from_, to, res):
+        row = tk.Frame(parent, bg=C_CARD)
+        row.pack(fill="x", pady=(4, 2))
+        tk.Label(row, text=title, font=("DejaVu Sans", 8, "bold"), bg=C_CARD, fg=C_TEXT).pack(side="left")
+
+        val_lbl = tk.Label(row, text=f"{int(var.get()*100)}%", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED)
+        val_lbl.pack(side="right")
+
+        def update_val(val):
+            val_lbl.config(text=f"{int(float(val)*100)}%")
+
+        scale = tk.Scale(parent, from_=from_, to=to, resolution=res, orient="horizontal", variable=var,
+                         bg=C_CARD, fg=C_TEXT_H, troughcolor=C_CARD_ALT, highlightthickness=0,
+                         showvalue=0, command=update_val)
+        scale.pack(fill="x", pady=(0, 6))
+
+    # -------------------------------------------------------------
+    # TAB 3: WALLPAPERS MANAGER (ALL-CUSTOM & PRESETS)
     # -------------------------------------------------------------
     def render_wallpapers_tab(self):
         c = self.content_scroll
         active_id = self.settings.get("wallpaper_id", "kaede_to_suzu")
         current_path = self.settings.get("wallpaper_path", "")
 
-        # 1. Active Wallpaper Hero Card
         hero_card = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
         hero_card.pack(fill="x", pady=(0, 14))
 
@@ -425,7 +575,6 @@ class DiscordStyledStudio:
         row_h = tk.Frame(hero_card, bg=C_CARD)
         row_h.pack(fill="x", pady=(6, 0))
 
-        # Hero Thumbnail
         thumb = self.get_thumbnail(current_path, width=160, height=90)
         lbl_h_thumb = tk.Label(row_h, image=thumb, bg=C_CARD)
         lbl_h_thumb.image = thumb
@@ -446,33 +595,29 @@ class DiscordStyledStudio:
         tag_row = tk.Frame(info_h, bg=C_CARD)
         tag_row.pack(anchor="w", pady=(2, 0))
         tk.Label(tag_row, text="[ ACTIVE IN DISCORD ]", font=("DejaVu Sans", 8, "bold"), bg=C_GREEN, fg="#ffffff", padx=8, pady=2).pack(side="left")
-        tk.Label(tag_row, text="Zero-Lag Mode Enabled", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED, padx=8).pack(side="left")
 
-        # 2. Featured Anime Presets with Visual Cards
+        # Featured Presets
         card_presets = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
         card_presets.pack(fill="x", pady=(0, 14))
 
         tk.Label(card_presets, text="Featured Anime Presets", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        tk.Label(card_presets, text="Click to apply high-definition anime backgrounds instantly to your Discord client:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 10))
+        tk.Label(card_presets, text="Click to apply high-definition anime backgrounds immediately:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 10))
 
         for wp in WALLPAPERS:
             is_active = (wp["id"] == active_id)
             row = tk.Frame(card_presets, bg=C_CARD_ALT, padx=10, pady=8)
             row.pack(fill="x", pady=4)
 
-            # Thumbnail
             wp_thumb = self.get_thumbnail(wp["path"], width=110, height=62)
             lbl_t = tk.Label(row, image=wp_thumb, bg=C_CARD_ALT)
             lbl_t.image = wp_thumb
             lbl_t.pack(side="left", padx=(0, 12))
 
-            # Details
             col_d = tk.Frame(row, bg=C_CARD_ALT)
             col_d.pack(side="left", fill="both", expand=True)
             tk.Label(col_d, text=wp["name"], font=("DejaVu Sans", 9, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(anchor="w")
             tk.Label(col_d, text=wp["desc"], font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED).pack(anchor="w", pady=(2, 0))
 
-            # Action button
             if is_active:
                 tk.Label(row, text="[ CURRENT ]", font=("DejaVu Sans", 8, "bold"), bg=C_GREEN, fg="#ffffff", padx=10, pady=4).pack(side="right")
             else:
@@ -480,12 +625,12 @@ class DiscordStyledStudio:
                                 relief="flat", padx=12, pady=4, cursor="hand2", command=lambda w=wp: self.select_preset_wallpaper(w))
                 btn.pack(side="right")
 
-        # 3. All-Custom Wallpaper (Manual File Selection)
+        # All-Custom Manual File Selection
         card_custom = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
         card_custom.pack(fill="x", pady=(0, 14))
 
-        tk.Label(card_custom, text="Custom Wallpaper (All-Custom File Selection)", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        tk.Label(card_custom, text="Select ANY custom image file from your computer (jpg, png, webp, gif):", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 8))
+        tk.Label(card_custom, text="Custom Wallpaper (Manual File Selection)", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_custom, text="Choose ANY image file from your computer without restriction (jpg, png, webp, gif):", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 8))
 
         row_c = tk.Frame(card_custom, bg=C_CARD)
         row_c.pack(fill="x", pady=4)
@@ -509,35 +654,17 @@ class DiscordStyledStudio:
             tk.Button(row_quick, text=f"[{q_name}]", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_TEXT, relief="flat", cursor="hand2",
                       command=lambda d=q_dir: self.browse_in_directory(d)).pack(side="left", padx=3)
 
-        # 4. Translucency Controls Card
+        # Wallpaper Darkness Overlay
         card_trans = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
         card_trans.pack(fill="x")
 
-        tk.Label(card_trans, text="Background Glass Translucency", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        tk.Label(card_trans, text="Adjust opacity sliders to balance anime artwork visibility with chat readability:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 8))
+        tk.Label(card_trans, text="Wallpaper Darkening Overlay", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_trans, text="Adjust dark overlay to ensure high contrast text against light anime artwork:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 8))
 
-        self.create_slider(card_trans, "Background Overlay Darkness:", self.wp_opacity_var, 0.10, 0.98, 0.02)
-        self.create_slider(card_trans, "Channels Sidebar Translucency:", self.sidebar_op_var, 0.20, 0.95, 0.02)
-        self.create_slider(card_trans, "Chat Messages Layer Translucency:", self.chat_op_var, 0.05, 0.85, 0.02)
-
-    def create_slider(self, parent, title, var, from_, to, res):
-        row = tk.Frame(parent, bg=C_CARD)
-        row.pack(fill="x", pady=(4, 2))
-        tk.Label(row, text=title, font=("DejaVu Sans", 8, "bold"), bg=C_CARD, fg=C_TEXT).pack(side="left")
-
-        val_lbl = tk.Label(row, text=f"{int(var.get()*100)}%", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED)
-        val_lbl.pack(side="right")
-
-        def update_val(val):
-            val_lbl.config(text=f"{int(float(val)*100)}%")
-
-        scale = tk.Scale(parent, from_=from_, to=to, resolution=res, orient="horizontal", variable=var,
-                         bg=C_CARD, fg=C_TEXT_H, troughcolor=C_CARD_ALT, highlightthickness=0,
-                         showvalue=0, command=update_val)
-        scale.pack(fill="x", pady=(0, 6))
+        self.create_slider(card_trans, "Wallpaper Darkening Level:", self.wp_opacity_var, 0.10, 0.95, 0.02)
 
     # -------------------------------------------------------------
-    # TAB 2: COLOR PALETTES
+    # TAB 4: COLOR PALETTES & EMBEDS
     # -------------------------------------------------------------
     def render_colors_tab(self):
         c = self.content_scroll
@@ -555,7 +682,6 @@ class DiscordStyledStudio:
             row = tk.Frame(card_pal, bg=C_CARD_ALT, padx=12, pady=7)
             row.pack(fill="x", pady=3)
 
-            # Swatches
             tk.Label(row, text="    ", bg=pri, relief="flat").pack(side="left", padx=4)
             tk.Label(row, text="    ", bg=sec, relief="flat").pack(side="left", padx=4)
             tk.Label(row, text=name, font=("DejaVu Sans", 9, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(side="left", padx=10)
@@ -570,7 +696,7 @@ class DiscordStyledStudio:
 
         # Custom Hex Color Picker Card
         card_custom_c = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
-        card_custom_c.pack(fill="x")
+        card_custom_c.pack(fill="x", pady=(0, 14))
 
         tk.Label(card_custom_c, text="Custom Color Values (All-Custom Hex)", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
         tk.Label(card_custom_c, text="Pick any exact hex color using the system color chooser:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 8))
@@ -590,13 +716,19 @@ class DiscordStyledStudio:
         tk.Button(row_pick, text="Choose Color...", font=("DejaVu Sans", 8), bg="#3b3e45", fg=C_TEXT_H, relief="flat", padx=8, pady=2,
                   command=self.pick_soft_color).pack(side="left", padx=4)
 
+        # Embed Fix Explanation Card
+        card_emb = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        card_emb.pack(fill="x")
+
+        tk.Label(card_emb, text="Embed Cards Styling (No Muddy Shadows)", font=("DejaVu Sans", 10, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_emb, text="Embeds render as sleek translucent cards with a solid colored accent bar and zero laggy shadows.", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 0))
+
     # -------------------------------------------------------------
-    # TAB 3: VOICE & PROFILE UI
+    # TAB 5: VOICE & VIDEO UI
     # -------------------------------------------------------------
     def render_voice_tab(self):
         c = self.content_scroll
 
-        # Speaking Ring Colors
         card_spk = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
         card_spk.pack(fill="x", pady=(0, 14))
 
@@ -617,7 +749,6 @@ class DiscordStyledStudio:
                 tk.Button(row, text="Select", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#fff", relief="flat", padx=8, pady=1,
                           command=lambda cl=col: self.set_speaking_color(cl)).pack(side="right")
 
-        # Tile Sliders
         card_tiles = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
         card_tiles.pack(fill="x")
 
@@ -625,21 +756,10 @@ class DiscordStyledStudio:
         tk.Label(card_tiles, text="Configure participant tile glass opacity and user profile card styling:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 8))
 
         self.create_slider(card_tiles, "Voice Tile Translucency (Opacity):", self.tile_op_var, 0.10, 0.85, 0.02)
-
-        # Tile corner radius
-        row_rad = tk.Frame(card_tiles, bg=C_CARD)
-        row_rad.pack(fill="x", pady=(4, 2))
-        tk.Label(row_rad, text="Tile Corner Radius (px):", font=("DejaVu Sans", 8, "bold"), bg=C_CARD, fg=C_TEXT).pack(side="left")
-        lbl_rad_v = tk.Label(row_rad, text=f"{self.tile_rad_var.get()}px", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED)
-        lbl_rad_v.pack(side="right")
-        tk.Scale(card_tiles, from_=4, to=24, orient="horizontal", variable=self.tile_rad_var,
-                 bg=C_CARD, fg=C_TEXT_H, troughcolor=C_CARD_ALT, highlightthickness=0, showvalue=0,
-                 command=lambda val: lbl_rad_v.config(text=f"{int(val)}px")).pack(fill="x", pady=(0, 6))
-
         self.create_slider(card_tiles, "User Profile Popout Modal Opacity:", self.prof_op_var, 0.50, 0.98, 0.02)
 
     # -------------------------------------------------------------
-    # TAB 4: LAYOUT & CLEARANCE (ANTI-NABRAK)
+    # TAB 6: LAYOUT & CLEARANCE (ANTI-NABRAK)
     # -------------------------------------------------------------
     def render_layout_tab(self):
         c = self.content_scroll
@@ -659,7 +779,6 @@ class DiscordStyledStudio:
                  bg=C_CARD, fg=C_TEXT_H, troughcolor=C_CARD_ALT, highlightthickness=0, showvalue=0,
                  command=lambda val: lbl_sp_v.config(text=f"{int(val)}px")).pack(fill="x")
 
-        # Performance Toggles
         card_opt = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
         card_opt.pack(fill="x")
 
@@ -673,114 +792,158 @@ class DiscordStyledStudio:
                              variable=self.avatar_fix_var, bg=C_CARD, fg=C_TEXT, selectcolor=C_CARD_ALT, activebackground=C_CARD)
         cb2.pack(anchor="w", pady=4)
 
-        # Keyboard shortcuts reference
-        card_hk = tk.Frame(c, bg=C_CARD, padx=16, pady=12)
-        card_hk.pack(fill="x", pady=(14, 0))
-        tk.Label(card_hk, text="Keyboard Shortcuts Reference", font=("DejaVu Sans", 9, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        info = "Ctrl+Shift+P : Open Command Palette inside Discord or desktop\nCtrl+S : Save & apply theme immediately without restart\nCtrl+R : Restart Discord with safety anti-crash flags"
-        tk.Label(card_hk, text=info, font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED, justify="left").pack(anchor="w", pady=(4, 0))
-
     # -------------------------------------------------------------
-    # TAB 5: INSTANT SETUP & STATUS
+    # TAB 7: EXPORT & IMPORT THEMES (.ZIP BUNDLES)
     # -------------------------------------------------------------
-    def render_instant_tab(self):
+    def render_packager_tab(self):
         c = self.content_scroll
 
-        card_box = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
-        card_box.pack(fill="x", pady=(0, 14))
+        # Export Card
+        card_exp = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_exp.pack(fill="x", pady=(0, 14))
 
-        tk.Label(card_box, text="1-Click Instant Setup", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        tk.Label(card_box, text="Automatically verifies BetterDiscord injection, sets Kaede to Suzu or anime wallpaper, and configures icons:",
-                 font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED, justify="left").pack(anchor="w", pady=(2, 10))
+        tk.Label(card_exp, text="Export Current Theme as ZIP Bundle", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        desc_e = "Package your current colors, translucency, corner radius, and embedded wallpaper into a single portable .zip file to share with friends or backup."
+        tk.Label(card_exp, text=desc_e, font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED, wraplength=640, justify="left").pack(anchor="w", pady=(2, 10))
 
-        row_b = tk.Frame(card_box, bg=C_CARD)
-        row_b.pack(fill="x")
+        tk.Button(card_exp, text="Export Theme (.zip)", font=("DejaVu Sans", 9, "bold"), bg=C_BLURPLE, fg="#ffffff",
+                  relief="flat", padx=16, pady=6, cursor="hand2", command=self.action_export_theme).pack(anchor="w")
 
-        tk.Button(row_b, text="Run 1-Click Instant Setup", font=("DejaVu Sans", 9, "bold"), bg=C_BLURPLE, fg="#fff",
-                  relief="flat", padx=16, pady=6, cursor="hand2", command=self.run_instant_setup).pack(side="left")
+        # Import Card
+        card_imp = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_imp.pack(fill="x")
 
-        tk.Button(row_b, text="Restart Discord (Ctrl+R)", font=("DejaVu Sans", 9), bg="#3b3e45", fg=C_TEXT_H,
-                  relief="flat", padx=12, pady=6, cursor="hand2", command=self.restart_discord_safe).pack(side="left", padx=10)
+        tk.Label(card_imp, text="Import Theme from ZIP Bundle", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        desc_i = "Import any community theme zip file. It automatically extracts embedded wallpapers, configures all settings, and applies the theme to Discord immediately."
+        tk.Label(card_imp, text=desc_i, font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED, wraplength=640, justify="left").pack(anchor="w", pady=(2, 10))
 
-        # Status Diagnostics Card
-        card_st = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
-        card_st.pack(fill="x")
+        tk.Button(card_imp, text="Import Theme (.zip)...", font=("DejaVu Sans", 9, "bold"), bg="#3b3e45", fg=C_TEXT_H,
+                  relief="flat", padx=16, pady=6, cursor="hand2", command=self.action_import_theme).pack(anchor="w")
 
-        tk.Label(card_st, text="Client & System Status", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w", pady=(0, 6))
-
-        bd_st = bd_injector.check_status()
-        bd_text = "BetterDiscord: Injected & Active" if bd_st.get("injected") else "BetterDiscord: Not Injected"
-        bd_color = C_GREEN if bd_st.get("injected") else "#fde047"
-        tk.Label(card_st, text=bd_text, font=("DejaVu Sans", 9), bg=C_CARD, fg=bd_color).pack(anchor="w", pady=1)
-
-        res = subprocess.run(["pgrep", "-f", "Discord.real"], stdout=subprocess.PIPE)
-        dc_text = "Discord Process: Running" if res.returncode == 0 else "Discord Process: Stopped"
-        dc_color = C_GREEN if res.returncode == 0 else C_MUTED
-        tk.Label(card_st, text=dc_text, font=("DejaVu Sans", 9), bg=C_CARD, fg=dc_color).pack(anchor="w", pady=1)
-
-        tk.Label(card_st, text=f"Active Wallpaper ID: {self.settings.get('wallpaper_id', 'kaede_to_suzu')}", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_TEXT).pack(anchor="w", pady=1)
-        tk.Label(card_st, text=f"Active Palette: {self.settings.get('active_preset', 'Sakura Soft')}", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_TEXT).pack(anchor="w", pady=1)
-
-        # Safe ToS Note
-        card_safe = tk.Frame(c, bg="#1a1c1e", padx=12, pady=8, highlightthickness=1, highlightbackground="#2d5a3f")
-        card_safe.pack(fill="x", pady=(14, 0))
-        tk.Label(card_safe, text="Safety Notice: 100% Client-Side CSS Theme. NOT a Nitro modification. Completely safe and free from account bans.",
-                 font=("DejaVu Sans", 8), bg="#1a1c1e", fg=C_GREEN).pack(anchor="w")
-
-    # -------------------------------------------------------------
-    # TAB 6: PLUGINS
-    # -------------------------------------------------------------
-    def render_plugins_tab(self):
-        c = self.content_scroll
-
-        card_pl = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
-        card_pl.pack(fill="x")
-
-        tk.Label(card_pl, text="BetterDiscord Plugins", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        tk.Label(card_pl, text="Manage plugins installed in your BetterDiscord configuration:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 10))
-
-        plugins = plugins_manager.get_installed_plugins()
-        for item in plugins:
-            row = tk.Frame(card_pl, bg=C_CARD_ALT, padx=12, pady=6)
-            row.pack(fill="x", pady=3)
-
-            col = tk.Frame(row, bg=C_CARD_ALT)
-            col.pack(side="left", fill="x", expand=True)
-            status_text = "[Active]" if item["installed"] else "[Not Installed]"
-            status_col = C_GREEN if item["installed"] else C_MUTED
-            tk.Label(col, text=f"{item['name']} {status_text}", font=("DejaVu Sans", 9, "bold"), bg=C_CARD_ALT, fg=status_col).pack(anchor="w")
-            tk.Label(col, text=f"{item['desc']} (by {item['author']})", font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED).pack(anchor="w")
-
-            if item["installed"]:
-                tk.Button(row, text="Remove", font=("DejaVu Sans", 8), bg=C_RED, fg="#fff", relief="flat", padx=8, pady=2,
-                          command=lambda pid=item["id"]: [plugins_manager.uninstall_plugin(pid), self.show_tab("plugins")]).pack(side="right")
+    def action_export_theme(self):
+        f = filedialog.asksaveasfilename(
+            title="Export Theme ZIP Package",
+            defaultextension=".zip",
+            filetypes=[("Zip Archive", "*.zip")]
+        )
+        if f:
+            ok, msg = theme_packager.export_theme_zip(f, self.settings, theme_name="My Discord Custom Theme")
+            if ok:
+                messagebox.showinfo("Export Successful", msg)
             else:
-                tk.Button(row, text="Install", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#fff", relief="flat", padx=10, pady=2,
-                          command=lambda pid=item["id"]: [plugins_manager.install_plugin(pid), self.show_tab("plugins")]).pack(side="right")
+                messagebox.showerror("Export Failed", msg)
+
+    def action_import_theme(self):
+        f = filedialog.askopenfilename(
+            title="Select Theme ZIP Package to Import",
+            filetypes=[("Zip Archive", "*.zip")]
+        )
+        if f:
+            ok, new_s, msg = theme_packager.import_theme_zip(f)
+            if ok:
+                self.settings = new_s
+                self.init_variables()
+                self.show_tab("packager")
+                messagebox.showinfo("Import Successful", msg)
+            else:
+                messagebox.showerror("Import Failed", msg)
 
     # -------------------------------------------------------------
-    # TAB 7: ABOUT & CONTRIBUTORS
+    # TAB 8: PLUGIN / EXTENSION SYSTEM (.ZIP CHROME-STYLE)
+    # -------------------------------------------------------------
+    def render_extensions_tab(self):
+        c = self.content_scroll
+
+        # Actions Card
+        card_act = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_act.pack(fill="x", pady=(0, 14))
+
+        tk.Label(card_act, text="Modular Extension System (Chrome-Style ZIP Packages)", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        desc_x = "Install custom add-ons and community plugins packaged as .zip files containing manifest.json and style.css, or create your own extension template with 1 click."
+        tk.Label(card_act, text=desc_x, font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED, wraplength=640, justify="left").pack(anchor="w", pady=(2, 10))
+
+        row_b = tk.Frame(card_act, bg=C_CARD)
+        row_b.pack(fill="x", pady=(4, 0))
+
+        tk.Button(row_b, text="Install Extension (.zip)...", font=("DejaVu Sans", 9, "bold"), bg=C_BLURPLE, fg="#ffffff",
+                  relief="flat", padx=14, pady=6, cursor="hand2", command=self.action_install_extension).pack(side="left")
+
+        tk.Button(row_b, text="Create Extension Template (.zip)", font=("DejaVu Sans", 9), bg="#3b3e45", fg=C_TEXT_H,
+                  relief="flat", padx=12, pady=6, cursor="hand2", command=self.action_create_extension_template).pack(side="left", padx=10)
+
+        # Installed Extensions List
+        card_list = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_list.pack(fill="x")
+
+        tk.Label(card_list, text="Installed Extensions", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+
+        exts = extensions_system.list_installed_extensions()
+        if not exts:
+            tk.Label(card_list, text="No custom extensions installed yet. Click 'Create Extension Template (.zip)' to start building one!",
+                     font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(6, 0))
+        else:
+            for item in exts:
+                row_e = tk.Frame(card_list, bg=C_CARD_ALT, padx=12, pady=8)
+                row_e.pack(fill="x", pady=3)
+
+                col = tk.Frame(row_e, bg=C_CARD_ALT)
+                col.pack(side="left", fill="both", expand=True)
+
+                st_text = "[Active]" if item["enabled"] else "[Disabled]"
+                st_color = C_GREEN if item["enabled"] else C_MUTED
+                tk.Label(col, text=f"{item['name']} v{item['version']} {st_text}", font=("DejaVu Sans", 9, "bold"), bg=C_CARD_ALT, fg=st_color).pack(anchor="w")
+                tk.Label(col, text=f"{item['description']} (by {item['author']})", font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED).pack(anchor="w", pady=1)
+
+                btn_toggle = tk.Button(row_e, text="Disable" if item["enabled"] else "Enable", font=("DejaVu Sans", 8, "bold"),
+                                       bg="#3b3e45" if item["enabled"] else C_BLURPLE, fg="#ffffff", relief="flat", padx=8, pady=2,
+                                       command=lambda eid=item["id"], en=not item["enabled"]: [extensions_system.toggle_extension(eid, en), self.show_tab("extensions")])
+                btn_toggle.pack(side="right", padx=(6, 0))
+
+                btn_del = tk.Button(row_e, text="Uninstall", font=("DejaVu Sans", 8), bg=C_RED, fg="#ffffff", relief="flat", padx=8, pady=2,
+                                    command=lambda eid=item["id"]: [extensions_system.uninstall_extension(eid), self.show_tab("extensions")])
+                btn_del.pack(side="right")
+
+    def action_install_extension(self):
+        f = filedialog.askopenfilename(
+            title="Select Extension ZIP Archive to Install",
+            filetypes=[("Zip Archive", "*.zip")]
+        )
+        if f:
+            ok, msg = extensions_system.install_extension_zip(f)
+            if ok:
+                self.show_tab("extensions")
+                messagebox.showinfo("Installed", msg)
+            else:
+                messagebox.showerror("Error", msg)
+
+    def action_create_extension_template(self):
+        f = filedialog.asksaveasfilename(
+            title="Save Extension ZIP Template",
+            defaultextension=".zip",
+            initialfile="my-extension-template.zip",
+            filetypes=[("Zip Archive", "*.zip")]
+        )
+        if f:
+            ok, msg = extensions_system.create_extension_template(f, name="Custom Neon Theme", author="myzert")
+            if ok:
+                messagebox.showinfo("Template Created", msg)
+            else:
+                messagebox.showerror("Error", msg)
+
+    # -------------------------------------------------------------
+    # TAB 9: CONTRIBUTORS & WIKI
     # -------------------------------------------------------------
     def render_about_tab(self):
         c = self.content_scroll
 
-        card_about = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
-        card_about.pack(fill="x", pady=(0, 14))
-
-        tk.Label(card_about, text="Discord-Chan Custom Theme & Studio", font=("DejaVu Sans", 12, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        tk.Label(card_about, text="Universal Anime Theme Customizer for Discord • Licensed under GNU GPLv3",
-                 font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 8))
-
-        # Contributor Profile Card (Discord User Profile Style)
-        card_author = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        card_author = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
         card_author.pack(fill="x", pady=(0, 14))
 
-        tk.Label(card_author, text="Project Lead & Primary Contributor", font=("DejaVu Sans", 10, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w", pady=(0, 8))
+        tk.Label(card_author, text="Project Lead & Maintainer", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w", pady=(0, 8))
 
         row_a = tk.Frame(card_author, bg=C_CARD_ALT, padx=14, pady=12)
         row_a.pack(fill="x")
 
-        # Avatar
         if self.prof_icon_photo:
             tk.Label(row_a, image=self.prof_icon_photo, bg=C_CARD_ALT).pack(side="left", padx=(0, 12))
 
@@ -789,20 +952,22 @@ class DiscordStyledStudio:
 
         tk.Label(col_a, text="myzert (zerttcihuy@gmail.com)", font=("DejaVu Sans", 10, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(anchor="w")
         tk.Label(col_a, text="GitHub: https://github.com/myzert/discord-chan", font=("DejaVu Sans", 9), bg=C_CARD_ALT, fg=C_BLURPLE).pack(anchor="w", pady=2)
-        tk.Label(col_a, text="Role: Creator, Anime UI Designer, and Open-Source Project Maintainer", font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED).pack(anchor="w")
+        tk.Label(col_a, text="Role: Creator, UI/UX Designer, and Open-Source Project Maintainer", font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED).pack(anchor="w")
 
-        # Community Contribution Card
-        card_contrib = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
-        card_contrib.pack(fill="x")
+        # GitHub Wiki Card
+        card_wiki = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_wiki.pack(fill="x")
 
-        tk.Label(card_contrib, text="Community & Open Source Contributions", font=("DejaVu Sans", 10, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        contrib_info = (
-            "We welcome all anime enthusiasts and developers!\n"
-            "• Submit your own anime wallpapers via Pull Requests\n"
-            "• Report bugs and request features on our GitHub Issues\n"
-            "• Star the repository to show support and help the project grow"
+        tk.Label(card_wiki, text="Official Documentation & Wiki", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        info = (
+            "Explore full technical guides, tutorials, and customization guides in our GitHub Wiki:\n\n"
+            "• Theme Customization Guide (Colors, Opacities, Corner Radius)\n"
+            "• Transparent Window Mode Setup (See apps behind Discord)\n"
+            "• Chrome-Style Extension Development Guide (.zip specification)\n"
+            "• Theme Export/Import Workflow\n"
+            "• Zero-Lag CSS Performance Optimization Guide"
         )
-        tk.Label(card_contrib, text=contrib_info, font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED, justify="left").pack(anchor="w", pady=(4, 0))
+        tk.Label(card_wiki, text=info, font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED, justify="left").pack(anchor="w", pady=(4, 0))
 
     # -------------------------------------------------------------
     # ACTIONS & CALLBACKS
@@ -810,7 +975,7 @@ class DiscordStyledStudio:
     def open_command_palette(self):
         pal_win = tk.Toplevel(self.root)
         pal_win.title("Command Palette")
-        pal_win.geometry("540x420")
+        pal_win.geometry("540x440")
         pal_win.configure(bg=C_CARD)
         pal_win.transient(self.root)
         pal_win.grab_set()
@@ -821,13 +986,14 @@ class DiscordStyledStudio:
         tk.Label(head, text="Select an action to execute immediately:", font=("DejaVu Sans", 8), bg=C_SIDEBAR, fg=C_MUTED).pack(anchor="w")
 
         commands = [
-            ("1-Click Instant Setup", lambda: [pal_win.destroy(), self.run_instant_setup()]),
+            ("Toggle Master Theme (ON / OFF)", lambda: [pal_win.destroy(), self.toggle_master_theme()]),
+            ("Switch to Anime Wallpaper Mode", lambda: [pal_win.destroy(), self.select_display_mode("anime_wallpaper")]),
+            ("Switch to Transparent Window Mode", lambda: [pal_win.destroy(), self.select_display_mode("window_transparent")]),
+            ("Switch to Vanilla Discord Client", lambda: [pal_win.destroy(), self.select_display_mode("vanilla_discord")]),
             ("Save & Apply Theme (Ctrl+S)", lambda: [pal_win.destroy(), self.apply_theme_action()]),
+            ("Export Theme as ZIP Bundle", lambda: [pal_win.destroy(), self.action_export_theme()]),
+            ("Import Theme from ZIP Bundle", lambda: [pal_win.destroy(), self.action_import_theme()]),
             ("Restart Discord Safely (Ctrl+R)", lambda: [pal_win.destroy(), self.restart_discord_safe()]),
-            ("Switch to Kaede to Suzu Anime Theme", lambda: [pal_win.destroy(), self.select_preset_wallpaper(WALLPAPERS[0])]),
-            ("Switch to Whisper Me a Love Song", lambda: [pal_win.destroy(), self.select_preset_wallpaper(WALLPAPERS[1])]),
-            ("Apply Sakura Soft Pink Palette", lambda: [pal_win.destroy(), self.select_palette("Sakura Soft", "#ff85a2", "#fbcfe8")]),
-            ("Apply Lavender Yuri Palette", lambda: [pal_win.destroy(), self.select_palette("Lavender Yuri", "#c084fc", "#e9d5ff")]),
             ("Stop Discord Process", lambda: [pal_win.destroy(), subprocess.run(["pkill", "-9", "-f", "Discord.real"])])
         ]
 
@@ -906,9 +1072,15 @@ class DiscordStyledStudio:
         messagebox.showinfo("Voice Ring", f"Speaking ring color updated to {col}!")
 
     def apply_theme_action(self, silent=False):
+        self.settings["theme_enabled"] = self.theme_enabled_var.get()
+        self.settings["theme_mode"] = self.theme_mode_var.get()
         self.settings["wallpaper_opacity"] = self.wp_opacity_var.get()
+        self.settings["window_darkness"] = self.win_darkness_var.get()
         self.settings["sidebar_opacity"] = self.sidebar_op_var.get()
-        self.settings["chat_opacity"] = self.chat_op_var.get()
+        self.settings["guilds_opacity"] = self.guilds_op_var.get()
+        self.settings["chat_input_opacity"] = self.chat_input_op_var.get()
+        self.settings["embed_opacity"] = self.embed_op_var.get()
+        self.settings["corner_radius"] = self.corner_radius_var.get()
         self.settings["tile_opacity"] = self.tile_op_var.get()
         self.settings["tile_radius"] = self.tile_rad_var.get()
         self.settings["profile_opacity"] = self.prof_op_var.get()
@@ -928,8 +1100,8 @@ class DiscordStyledStudio:
             self.settings["wallpaper_path"] = kaede
             self.custom_path_var.set(kaede)
         self.apply_theme_action(silent=True)
-        self.show_tab("instant")
-        messagebox.showinfo("Setup Complete", "Instant Setup finished!\nTheme and icons are now configured.")
+        self.show_tab("mode")
+        messagebox.showinfo("Setup Complete", "Instant Setup finished!\nTheme and icons are configured.")
 
     def restart_discord_safe(self):
         subprocess.run(["pkill", "-9", "-f", "Discord.real"])
