@@ -113,6 +113,7 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 
 | Shortcut | Action |
 | :--- | :--- |
+| `F11` | Toggle Full Screen / Windowed Mode |
 | `Ctrl + Shift + P` or `Ctrl + P` | Open Quick Command Palette |
 | `Ctrl + S` | Save & Instantly Apply Theme to Discord |
 | `Ctrl + R` | Restart Discord with Anti-Crash Safe Flags |

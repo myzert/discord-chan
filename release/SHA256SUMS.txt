@@ -1,4 +1,4 @@
-192da840197e43cd87ea3f3639dd4804d7525e0b623564dad1c48a5c92244d8a  discord-chan_2.6.0_all.deb
-3aba7e61c7d17b97d1159b934cad2300bc2df46fa1e115d6fb4a3778288b86b8  discord-chan_2.6.0_setup.exe
-40a1d309c485ecf3f7fc908c2851192d4813ed648db084c271dc33dace19ad7e  discord-chan_2.6.0.tar.gz
-8da5729332fa778a825a053e2da1feb2ea35b031353fe04e4d3bd6b93481fe5a  discord-chan_2.6.0.zip
+428609e0c4977f496512c73734cb8b52f976f363e1a9ee57d2aca9f889f7b166  discord-chan_2.6.0_all.deb
+ba7729c45903a0ce1b704c6172ae9764cb4eedb6e0860da2693fe392901d3270  discord-chan_2.6.0_setup.exe
+a6c44d7b7ae569673c3b4e85cc84ad3f410df0a7f15db7d3e36d00e37ca8bf8d  discord-chan_2.6.0.tar.gz
+577e3bc2fcdfb1460d588da7dfe61224ebda7a8b2282d50c9b0f08ce79dd28fd  discord-chan_2.6.0.zip

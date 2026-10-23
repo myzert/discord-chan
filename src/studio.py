@@ -114,12 +114,21 @@ class DiscordStyledStudio:
         self.settings = theme_engine.load_settings()
         self.active_tab = "mode"
         self.thumb_cache = {}
+        self.is_fullscreen = False
 
         self.init_variables()
         self.load_app_icons()
         self.build_discord_shell()
         self.setup_hotkeys()
         self.show_tab("mode")
+
+        if "--fullscreen" in sys.argv or "-f" in sys.argv:
+            self.root.after(100, self.toggle_fullscreen)
+        elif "--maximized" in sys.argv or "-m" in sys.argv:
+            try:
+                self.root.attributes("-zoomed", True)
+            except Exception:
+                pass
 
     def init_variables(self):
         self.theme_enabled_var = tk.BooleanVar(value=bool(self.settings.get("theme_enabled", True)))
@@ -197,6 +206,8 @@ class DiscordStyledStudio:
         return photo
 
     def setup_hotkeys(self):
+        self.root.bind("<F11>", lambda e: self.toggle_fullscreen())
+        self.root.bind("<Escape>", lambda e: self.exit_fullscreen())
         self.root.bind("<Control-Shift-P>", lambda e: self.open_command_palette())
         self.root.bind("<Control-Shift-p>", lambda e: self.open_command_palette())
         self.root.bind("<Control-p>", lambda e: self.open_command_palette())
@@ -295,6 +306,11 @@ class DiscordStyledStudio:
 
         self.top_topic = tk.Label(self.top_bar, text="| Master switch, theme modes, and all-custom options", font=("DejaVu Sans", 9), bg=C_HEADER, fg=C_MUTED)
         self.top_topic.pack(side="left")
+
+        self.btn_fullscreen = tk.Button(self.top_bar, text="Full Screen (F11)", font=("DejaVu Sans", 8),
+                                      bg="#3b3e45", fg=C_TEXT_H, relief="flat", padx=10, pady=4, cursor="hand2",
+                                      command=self.toggle_fullscreen)
+        self.btn_fullscreen.pack(side="right", padx=(8, 0))
 
         btn_cmd = tk.Button(self.top_bar, text="Command Palette (Ctrl+Shift+P)", font=("DejaVu Sans", 8),
                             bg="#3b3e45", fg=C_TEXT_H, relief="flat", padx=10, pady=4, cursor="hand2",
@@ -1102,6 +1118,25 @@ class DiscordStyledStudio:
         self.apply_theme_action(silent=True)
         self.show_tab("mode")
         messagebox.showinfo("Setup Complete", "Instant Setup finished!\nTheme and icons are configured.")
+
+    def toggle_fullscreen(self, event=None):
+        self.is_fullscreen = not getattr(self, "is_fullscreen", False)
+        try:
+            self.root.attributes("-fullscreen", self.is_fullscreen)
+        except Exception:
+            try:
+                self.root.attributes("-zoomed", self.is_fullscreen)
+            except Exception:
+                pass
+        if hasattr(self, "btn_fullscreen"):
+            self.btn_fullscreen.config(
+                text="Windowed (F11)" if self.is_fullscreen else "Full Screen (F11)",
+                bg=C_BLURPLE if self.is_fullscreen else "#3b3e45"
+            )
+
+    def exit_fullscreen(self, event=None):
+        if getattr(self, "is_fullscreen", False):
+            self.toggle_fullscreen()
 
     def restart_discord_safe(self):
         subprocess.run(["pkill", "-9", "-f", "Discord.real"])

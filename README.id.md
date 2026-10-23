@@ -113,6 +113,7 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 
 | Tombol Pintas | Aksi |
 | :--- | :--- |
+| `F11` | Mode Layar Penuh (Full Screen) / Jendela Biasa |
 | `Ctrl + Shift + P` atau `Ctrl + P` | Buka Quick Command Palette |
 | `Ctrl + S` | Simpan & Terapkan Tema langsung ke Discord |
 | `Ctrl + R` | Restart Discord dengan flag aman anti-crash |
