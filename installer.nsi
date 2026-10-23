@@ -1,6 +1,6 @@
 !define PRODUCT_NAME "Discord-Chan"
 !define PRODUCT_VERSION "2.6.0"
-!define PRODUCT_PUBLISHER "Discord-Chan Team"
+!define PRODUCT_PUBLISHER "myzert (zerttcihuy@gmail.com)"
 !define PRODUCT_WEB_SITE "https://github.com/myzert/discord-chan"
 
 SetCompressor /SOLID lzma

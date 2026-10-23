@@ -19,8 +19,8 @@ REPO_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DEFAULT_WALLPAPER = os.path.join(REPO_DIR, "assets", "wallpapers", "1_whisper_me_a_love_song.jpg")
 
 DEFAULT_SETTINGS = {
-    "wallpaper_id": "whisper",
-    "wallpaper_path": DEFAULT_WALLPAPER,
+    "wallpaper_id": "kaede_to_suzu",
+    "wallpaper_path": os.path.join(REPO_DIR, "assets", "wallpapers", "kaede_to_suzu.webp"),
     "wallpaper_opacity": 0.80,
     "sidebar_opacity": 0.62,
     "chat_opacity": 0.40,
@@ -45,6 +45,21 @@ def load_settings():
                 data = json.load(f)
                 res = DEFAULT_SETTINGS.copy()
                 res.update(data)
+                # Sanitize active_preset: strip any emoji characters
+                if "active_preset" in res and isinstance(res["active_preset"], str):
+                    for char in ["🌸", "🍓", "🍑", "🍭", "🌺", "💜", "🖤", "✨", "🎀"]:
+                        res["active_preset"] = res["active_preset"].replace(char, "")
+                    res["active_preset"] = res["active_preset"].strip()
+                # Verify wallpaper path exists, else fallback to kaede or whisper
+                if "wallpaper_path" in res and not os.path.exists(res["wallpaper_path"]):
+                    kaede_path = os.path.join(REPO_DIR, "assets", "wallpapers", "kaede_to_suzu.webp")
+                    whisper_path = os.path.join(REPO_DIR, "assets", "wallpapers", "1_whisper_me_a_love_song.jpg")
+                    if os.path.exists(kaede_path):
+                        res["wallpaper_path"] = kaede_path
+                        res["wallpaper_id"] = "kaede_to_suzu"
+                    elif os.path.exists(whisper_path):
+                        res["wallpaper_path"] = whisper_path
+                        res["wallpaper_id"] = "whisper"
                 return res
         except Exception:
             pass
@@ -147,13 +162,15 @@ def generate_theme_css(settings):
    TOP SPACING & CLEAN WINDOW CLEARANCE (ANTI-NABRAK)
    ======================================================== */
 #app-mount {{
+    box-sizing: border-box !important;
     padding-top: var(--top-spacing) !important;
     background: transparent !important;
 }}
 
 /* Clean separation for top bar and headers */
 .typeWindows__421ed,
-.titleBar__421ed {{
+.titleBar__421ed,
+[class*="titleBar_"] {{
     height: 24px !important;
     margin-bottom: 2px !important;
     background: transparent !important;
@@ -213,29 +230,42 @@ body {{
 .messagesWrapper__36d07,
 .scroller__36d07,
 .scrollerContent__36d07,
-.pageWrapper_a3a4ce {{
+.pageWrapper_a3a4ce,
+[class*="app_"],
+[class*="bg_"],
+[class*="layer_"],
+[class*="layers_"],
+[class*="base_"],
+[class*="chat_"],
+[class*="chatContent_"],
+[class*="messagesWrapper_"],
+[class*="pageWrapper_"] {{
     background: transparent !important;
 }}
 
 /* Left Server List */
-.guilds__357e6 {{
+.guilds__357e6,
+[class*="guilds_"] {{
     background: var(--bg-darker) !important;
     border-right: 1px solid var(--border-subtle) !important;
 }}
-.guilds__357e6 [class*="folder_"] {{
+.guilds__357e6 [class*="folder_"],
+[class*="guilds_"] [class*="folder_"] {{
     background: transparent !important;
 }}
 
 /* Channels Sidebar */
 .sidebar_c48ade,
-.container__2637a {{
+.container__2637a,
+[class*="sidebar_"] {{
     background: var(--bg-sidebar) !important;
     border-right: 1px solid var(--border-subtle) !important;
 }}
 
 /* Channel & Chat Headers */
 .container__9293f,
-.title__9293f {{
+.title__9293f,
+[class*="header_"][class*="title_"] {{
     background: var(--bg-panels) !important;
     border-bottom: 1px solid var(--border-subtle) !important;
     height: 48px !important;
@@ -243,13 +273,15 @@ body {{
 }}
 
 /* Chat Message Background Layer */
-.chat__52833 {{
+.chat__52833,
+[class*="chat_"] {{
     background: var(--bg-chat-layer) !important;
 }}
 
 /* Bottom User Bar */
 .panels__357e6,
-.container_b7e1cb {{
+.container_b7e1cb,
+[class*="panels_"] {{
     background: var(--bg-darker) !important;
     border-top: 1px solid var(--border-subtle) !important;
 }}
@@ -257,7 +289,9 @@ body {{
 /* Members List */
 .membersWrap__5ca65,
 .members__5ca65,
-.container__5ca65 {{
+.container__5ca65,
+[class*="membersWrap_"],
+[class*="members_"] {{
     background: var(--bg-sidebar) !important;
     border-left: 1px solid var(--border-subtle) !important;
 }}
@@ -276,9 +310,11 @@ body {{
     background: var(--accent-pink-dim) !important;
 }}
 
-/* Avatar subtle pink accent ring */
-[class*="avatar__"] {{
+/* Avatar subtle pink accent ring & fixed alignment guard */
+[class*="avatar__"],
+[class*="avatarDecoration__"] {{
     border-radius: 50% !important;
+    flex-shrink: 0 !important;
     outline: 2px solid rgba(255, 133, 162, 0.45) !important;
     outline-offset: 1px !important;
     transition: outline-color 0.2s ease !important;
@@ -295,13 +331,16 @@ body {{
 
 /* Chat Text Input Bar */
 .channelTextArea__74017,
-.scrollableContainer__74017 {{
+.scrollableContainer__74017,
+[class*="channelTextArea_"],
+[class*="scrollableContainer_"] {{
     background: var(--bg-darker) !important;
     border: 1px solid var(--border-focused) !important;
     border-radius: 12px !important;
     margin-bottom: 16px !important;
 }}
-.channelTextArea__74017:focus-within {{
+.channelTextArea__74017:focus-within,
+[class*="channelTextArea_"]:focus-within {{
     border-color: var(--accent-pink) !important;
 }}
 
@@ -321,7 +360,9 @@ body {{
 }}
 
 /* Speaking indicator ring */
-[class*="speaking_"] {{
+[class*="speaking_"],
+[class*="avatarSpeaking_"],
+[class*="borderSpeaking_"] {{
     outline: 3px solid var(--speaking-glow) !important;
     outline-offset: 2px !important;
 }}
@@ -346,7 +387,9 @@ body {{
    ======================================================== */
 [class*="userProfileOuter_"],
 [class*="userProfileModalOuter_"],
-[class*="userPopoutOuter_"] {{
+[class*="userPopoutOuter_"],
+[class*="biteSizeProfile_"],
+[class*="fullSizeProfile_"] {{
     background: var(--profile-card-bg) !important;
     border: 1px solid var(--border-focused) !important;
     border-radius: 18px !important;

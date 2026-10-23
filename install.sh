@@ -137,22 +137,24 @@ print_success "Tema WhisperMeALoveSong.theme.css berhasil diterapkan."
 print_step "6. Menyiapkan Discord-Chan Studio CLI & Desktop Launcher..."
 chmod +x "$SCRIPT_DIR/discord-chan-studio.py" "$SCRIPT_DIR/src/"*.py
 ln -sf "$SCRIPT_DIR/discord-chan-studio.py" /usr/local/bin/discord-chan-custom
-ln -sf "$SCRIPT_DIR/discord-chan-studio.py" /usr/local/bin/discord-theme-editor
 print_success "Perintah 'discord-chan-custom' aktif secara global."
 
 # Step 7: Apply GPU Anti-Crash Fix for Linux Virtual Displays
 print_step "7. Mengoptimalkan Flags Anti-Crash untuk Linux..."
-DISCORD_LAUNCHER=""
-for d_bin in "$DISCORD_CONFIG_DIR"/app-*/Discord /usr/bin/discord; do
-    if [ -f "$d_bin" ]; then
-        DISCORD_LAUNCHER="$d_bin"
-        break
+for app_dir in "$DISCORD_CONFIG_DIR"/app-*; do
+    if [ -d "$app_dir" ] && [ -f "$app_dir/Discord" ]; then
+        if [ ! -f "$app_dir/Discord.real" ]; then
+            mv "$app_dir/Discord" "$app_dir/Discord.real"
+            cat << 'EOF' > "$app_dir/Discord"
+#!/bin/bash
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+exec "$DIR/Discord.real" --no-sandbox --disable-gpu "$@"
+EOF
+            chmod +x "$app_dir/Discord"
+            print_success "Anti-crash wrapper dibuat untuk $app_dir"
+        fi
     fi
 done
-
-if [ -n "$DISCORD_LAUNCHER" ] && [ -f "$DISCORD_CONFIG_DIR"/app-1.0.165/Discord.real ]; then
-    print_success "Launcher wrapper anti-crash sudah aktif."
-fi
 
 echo ""
 echo -e "${C_PINK}══════════════════════════════════════════════════════════════════════${C_RESET}"

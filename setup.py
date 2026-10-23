@@ -3,8 +3,10 @@ from setuptools import setup, find_packages
 setup(
     name="discord-chan-custom",
     version="2.6.0",
-    description="Pixel Retro Anime Theme & Studio Control Center for Discord",
-    author="Discord-Chan Custom Team",
+    description="Universal Anime Theme Customizer & Studio Dashboard for Discord",
+    author="myzert",
+    author_email="zerttcihuy@gmail.com",
+    url="https://github.com/myzert/discord-chan",
     packages=find_packages(),
     py_modules=["discord-chan-studio"],
     install_requires=[

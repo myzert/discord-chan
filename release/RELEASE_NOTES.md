@@ -1,13 +1,17 @@
-# 🌸 Discord-Chan v2.6.0: Pixel Retro Anime Release
+# 🌸 Discord-Chan v2.6.0: Official Discord-Styled Studio Release
 
 Welcome to the official release of **Discord-Chan v2.6.0**!
 
 ### 🌟 What's New:
-- 🐱 **Exclusive Discord-Chan Neko Mascot:** Application icons across desktop, menus, and taskbar now purely feature the beloved Discord-Chan Neko Mascot.
-- 👾 **Pixel Retro Anime Studio:** 16-bit arcade styled Control Center GUI with retro HUD, pixel cards, and audio chime feedback.
+- 🎛️ **Discord-Styled Studio Dashboard:** Re-engineered from the ground up to mirror Discord's native client dark interface (`#1e1f22`, `#2b2d31`, `#313338`). Features 3-pane navigation (Guilds, Channels, Content) and zero AI-retro artifacts.
+- 🚫 **Zero Emojis in Panel UI:** Clean, professional Discord text labels and indicators (`#`, `v`, `[Active]`, `[Select]`, `SETUP`, `APPLY`, `RELOAD`).
+- 🖼️ **All-Custom Wallpaper Manager:** Includes premier presets (*Kaede to Suzu The Animation*, *Whisper Me a Love Song*, *Sakura Blossom*, *Pastel Sunset Clouds*, *Discord-Chan Neko*) alongside an unrestricted manual file browser with live thumbnail previews.
+- 🐱 **Clean Mascot Icon:** Original Discord-Chan Neko mascot in a natural squircle without harsh borders or artificial outlines, keeping the desktop uncluttered.
+- ⚡ **Zero-Lag & Anti-Collision Engine:** High-performance 60 FPS CSS without heavy box-shadows or CPU blurs. Configurable `top-spacing` clearance prevents header collision with desktop taskbars.
+- 👤 **Chat Avatar Guard:** Fixes native message grid alignment so user avatars never overlap or distort.
+- 🎙️ **Voice Call Modernization:** Translucent video/screen share tiles, customizable glowing speaking ring, and glass profile popouts.
 - ⌨ **In-Discord Hotkey (<kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd>):** Open the Studio & Command Palette directly inside Discord or globally from any window!
-- 🪟 **Independent Glass Translucency:** Sliders for background overlay, sidebar translucency, chat layer translucency, and voice call tiles.
-- 📏 **Anti-Collision Layout:** Built-in `top-spacing` clearance to eliminate window header overlap.
+- 👤 **Lead Contributor Profile:** Created and maintained by **myzert** (`zerttcihuy@gmail.com`).
 - 🛡️ **100% Client-Side CSS (ToS Safe):** NOT a Nitro modification. 100% safe, aesthetic-only BetterDiscord styling.
 - 📜 **Licensed under GNU GPLv3.**
 

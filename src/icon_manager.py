@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
 Discord-Chan Custom: Icon Manager
-Generates high-res squircle, circle, and square icons in multiple resolutions.
-Installs icons into system paths and desktop launchers.
+Generates clean, authentic squircle and standard icons directly from the original
+Neko mascot without harsh borders or artificial high-contrast outlines.
+Installs icons into system paths and desktop launchers without clutter.
 """
 
 import os
@@ -14,26 +15,25 @@ def generate_icons(source_image_path, output_dir):
     if not os.path.exists(source_image_path):
         raise FileNotFoundError(f"Source image not found: {source_image_path}")
 
-    im = Image.open(source_image_path)
+    im = Image.open(source_image_path).convert("RGBA")
     w, h = im.size
 
     # Focus crop around character center
-    if w > h:
-        # Landscape: crop square around center
-        box_size = h
-        left = max(0, int((w - box_size) * 0.58))
-        if left + box_size > w:
-            left = w - box_size
-        crop = im.crop((left, 0, left + box_size, h))
+    if w != h:
+        box_size = min(w, h)
+        if w > h:
+            left = max(0, int((w - box_size) * 0.5))
+            crop = im.crop((left, 0, left + box_size, h))
+        else:
+            top = max(0, int((h - box_size) * 0.3))
+            crop = im.crop((0, top, w, top + box_size))
     else:
-        box_size = w
-        top = max(0, int((h - box_size) * 0.3))
-        crop = im.crop((0, top, w, top + box_size))
+        crop = im
 
     size_512 = (512, 512)
     base_512 = crop.resize(size_512, Image.Resampling.LANCZOS)
 
-    # 1. Squircle icon (standard modern app icon)
+    # 1. Clean Modern Squircle icon (Smooth natural corner radius, NO harsh borders)
     mask = Image.new('L', size_512, 0)
     draw_mask = ImageDraw.Draw(mask)
     radius = 115
@@ -41,32 +41,25 @@ def generate_icons(source_image_path, output_dir):
 
     icon_squircle = Image.new('RGBA', size_512, (0, 0, 0, 0))
     icon_squircle.paste(base_512, (0, 0), mask=mask)
-    draw_sq = ImageDraw.Draw(icon_squircle)
-    draw_sq.rounded_rectangle([(2, 2), (509, 509)], radius=radius-2, outline=(255, 133, 162, 230), width=5)
 
-    main_icon_path = os.path.join(output_dir, 'discord-chan.png')
+    main_icon_path = os.path.join(output_dir, 'discord-neko.png')
     icon_squircle.save(main_icon_path)
+    icon_squircle.save(os.path.join(output_dir, 'discord-neko-512.png'))
+    icon_squircle.save(os.path.join(output_dir, 'discord-chan.png'))
     icon_squircle.save(os.path.join(output_dir, 'discord-chan-512.png'))
-
-    # 2. Circle icon
-    mask_circle = Image.new('L', size_512, 0)
-    draw_circle = ImageDraw.Draw(mask_circle)
-    draw_circle.ellipse([(0, 0), size_512], fill=255)
-    icon_circle = Image.new('RGBA', size_512, (0, 0, 0, 0))
-    icon_circle.paste(base_512, (0, 0), mask=mask_circle)
-    draw_ci = ImageDraw.Draw(icon_circle)
-    draw_ci.ellipse([(2, 2), (509, 509)], outline=(255, 133, 162, 230), width=6)
-    icon_circle.save(os.path.join(output_dir, 'discord-chan-circle-512.png'))
-
-    # 3. Square
-    base_512.save(os.path.join(output_dir, 'discord-chan-square-512.png'))
 
     # Standard sizes
     for s in [256, 128, 64, 48, 32, 16]:
         resized = icon_squircle.resize((s, s), Image.Resampling.LANCZOS)
+        resized.save(os.path.join(output_dir, f'discord-neko-{s}.png'))
         resized.save(os.path.join(output_dir, f'discord-chan-{s}.png'))
 
-    # ICO format
+    # ICO format for Windows setup and desktop shortcuts
+    icon_squircle.save(
+        os.path.join(output_dir, 'discord-neko.ico'),
+        format='ICO',
+        sizes=[(16, 16), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
+    )
     icon_squircle.save(
         os.path.join(output_dir, 'discord-chan.ico'),
         format='ICO',
@@ -80,23 +73,22 @@ def install_system_icons(icon_path):
         return False, "Icon file does not exist"
     
     try:
-        # Install to /usr/share/pixmaps
         os.makedirs('/usr/share/pixmaps', exist_ok=True)
         shutil.copy2(icon_path, '/usr/share/pixmaps/discord.png')
         shutil.copy2(icon_path, '/usr/share/pixmaps/discord-chan.png')
 
-        # Install to hicolor
         icon_dir = os.path.dirname(icon_path)
         sizes = [('512x512', 512), ('256x256', 256), ('128x128', 128), ('64x64', 64), ('48x48', 48), ('32x32', 32), ('16x16', 16)]
         for dirname, s in sizes:
             target_dir = f'/usr/share/icons/hicolor/{dirname}/apps'
             os.makedirs(target_dir, exist_ok=True)
-            res_file = os.path.join(icon_dir, f'discord-chan-{s}.png')
+            res_file = os.path.join(icon_dir, f'discord-neko-{s}.png')
+            if not os.path.exists(res_file):
+                res_file = os.path.join(icon_dir, f'discord-chan-{s}.png')
             if os.path.exists(res_file):
                 shutil.copy2(res_file, os.path.join(target_dir, 'discord.png'))
                 shutil.copy2(res_file, os.path.join(target_dir, 'discord-chan.png'))
 
-        # Also user local icons
         user_icons = os.path.expanduser('~/.local/share/icons')
         os.makedirs(user_icons, exist_ok=True)
         shutil.copy2(icon_path, os.path.join(user_icons, 'discord.png'))
@@ -140,6 +132,15 @@ Categories=Settings;DesktopSettings;GTK;Network;
     for d in desktop_dirs:
         try:
             os.makedirs(d, exist_ok=True)
+            
+            # Clean up old redundant desktop shortcuts to avoid clutter
+            old_theme_editor = os.path.join(d, 'discord-theme-editor.desktop')
+            if os.path.exists(old_theme_editor):
+                try:
+                    os.remove(old_theme_editor)
+                except Exception:
+                    pass
+
             dc_path = os.path.join(d, 'discord.desktop')
             with open(dc_path, 'w', encoding='utf-8') as f:
                 f.write(discord_content)
@@ -149,21 +150,17 @@ Categories=Settings;DesktopSettings;GTK;Network;
             with open(studio_path, 'w', encoding='utf-8') as f:
                 f.write(panel_content)
             os.chmod(studio_path, 0o755)
-            
-            # Keep compat with discord-theme-editor.desktop
-            compat_path = os.path.join(d, 'discord-theme-editor.desktop')
-            with open(compat_path, 'w', encoding='utf-8') as f:
-                f.write(panel_content)
-            os.chmod(compat_path, 0o755)
         except Exception:
             pass
 
     return True
 
 if __name__ == "__main__":
-    src = "/root/Downloads/whisper_me_a_love_song_yuri_anime.jpg"
-    out = "/root/discord-chan-custom/assets/icons"
+    src = "/root/Downloads/file_0000000068e0820b8bbfefec482b49ef.png"
+    if not os.path.exists(src):
+        src = "/root/discord-chan/assets/icons/discord-neko.png"
+    out = "/root/discord-chan/assets/icons"
     generate_icons(src, out)
-    install_system_icons(os.path.join(out, "discord-chan.png"))
+    install_system_icons(os.path.join(out, "discord-neko.png"))
     update_desktop_shortcuts()
-    print("Icons processed and installed successfully!")
+    print("Icons processed and installed successfully without harsh borders or desktop clutter!")
