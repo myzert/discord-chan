@@ -30,29 +30,31 @@ sys.path.insert(0, SCRIPT_DIR)
 
 import theme_engine
 import bd_injector
-import bd_store
+import bd_customizer
 import icon_manager
 import plugins_manager
 import theme_packager
 import extensions_system
 
-# Discord Official Dark Palette
-C_GUILDS    = "#1e1f22"
-C_SIDEBAR   = "#2b2d31"
-C_CONTENT   = "#313338"
-C_CARD      = "#232428"
-C_CARD_ALT  = "#1e1f22"
-C_HEADER    = "#313338"
-C_BORDER    = "#1f2023"
-C_BLURPLE   = "#5865f2"
+# Discord-Chan Studio Modern Creative Palette (Distinct Studio Aesthetic)
+C_GUILDS    = "#10121a"  # Deep studio obsidian workspace rail
+C_SIDEBAR   = "#161822"  # Slate sidebar
+C_CONTENT   = "#0f1118"  # Main canvas surface
+C_CARD      = "#1a1d29"  # Elevated card surface
+C_CARD_ALT  = "#141620"  # Dark inset / sub-card surface
+C_HEADER    = "#151722"  # Top navigation bar
+C_BORDER    = "#25293a"  # Crisp border separator
+C_BLURPLE   = "#5865f2"  # Blurple brand
 C_BLURPLE_H = "#4752c4"
-C_PINK      = "#ff85a2"
-C_GREEN     = "#23a55a"
-C_GREEN_H   = "#1f8b4c"
-C_RED       = "#da373c"
-C_TEXT      = "#dbdee1"
-C_TEXT_H    = "#f2f3f5"
-C_MUTED     = "#949ba4"
+C_PINK      = "#ff7597"  # Studio Sakura Pink accent
+C_CYAN      = "#38bdf8"  # Neon Cyan highlight
+C_PURPLE    = "#a78bfa"  # Cyber Violet / BetterDiscord accent
+C_GREEN     = "#22c55e"  # Active emerald
+C_GREEN_H   = "#16a34a"
+C_RED       = "#f43f5e"  # Alert / Delete red
+C_TEXT      = "#e2e8f0"  # Primary bright text
+C_TEXT_H    = "#ffffff"  # Pure white header text
+C_MUTED     = "#8e99a8"  # Muted secondary text
 
 WALLPAPERS = [
     {
@@ -179,6 +181,15 @@ class DiscordStyledStudio:
         self.top_spacing_var = tk.IntVar(value=int(self.settings.get("top_spacing", 12)))
         self.zero_lag_var = tk.BooleanVar(value=bool(self.settings.get("zero_lag", True)))
         self.avatar_fix_var = tk.BooleanVar(value=bool(self.settings.get("chat_avatar_fixed", True)))
+        # Discord UI Enhancements
+        self.show_hidden_ch_var = tk.BooleanVar(value=bool(self.settings.get("show_hidden_channels", False)))
+        self.compact_mode_var = tk.BooleanVar(value=bool(self.settings.get("compact_mode", False)))
+        self.hide_member_list_var = tk.BooleanVar(value=bool(self.settings.get("hide_member_list", False)))
+        self.hide_server_list_var = tk.BooleanVar(value=bool(self.settings.get("hide_server_list", False)))
+        self.smooth_anim_var = tk.BooleanVar(value=bool(self.settings.get("smooth_animations", True)))
+        self.mention_glow_var = tk.BooleanVar(value=bool(self.settings.get("mention_glow", True)))
+        self.blur_avatars_var = tk.BooleanVar(value=bool(self.settings.get("blur_avatars", False)))
+        self.typing_indicator_var = tk.BooleanVar(value=bool(self.settings.get("typing_indicator_fancy", True)))
 
     def load_app_icons(self):
         icon_path = os.path.join(REPO_DIR, "assets", "icons", "discord-neko.png")
@@ -277,7 +288,11 @@ class DiscordStyledStudio:
         sep.pack(pady=4)
 
         self.create_guild_action("INSTALL", C_GREEN, "#ffffff", self.run_instant_setup)
-        self.create_guild_action("APPLY", C_CARD, C_TEXT_H, self.apply_theme_action)
+        self.create_guild_action("THEMES", C_CARD, C_PINK, lambda: self.show_tab("theme_manager"))
+        self.create_guild_action("BD UI", C_CARD, C_PURPLE, lambda: self.show_tab("bd_theme_studio"))
+        self.create_guild_action("PLUGIN", C_CARD, C_CYAN, lambda: self.show_tab("bd_plugin_studio"))
+        self.create_guild_action("ENHANCE", C_CARD, "#f59e0b", lambda: self.show_tab("discord_ui"))
+        self.create_guild_action("APPLY", C_BLURPLE, "#ffffff", self.apply_theme_action)
         self.create_guild_action("RELOAD", C_CARD, C_TEXT_H, self.restart_discord_safe)
 
         bot_add = tk.Label(self.guilds_bar, text="+", font=("DejaVu Sans", 14), bg=C_CARD, fg=C_GREEN, width=3, height=1, cursor="hand2")
@@ -308,14 +323,16 @@ class DiscordStyledStudio:
         self.add_channel_btn("mode", "theme-mode-and-toggles")
         self.add_channel_btn("chat", "chat-and-transparency")
 
-        self.add_category_header("CUSTOMIZATION & THEMES")
+        self.add_category_header("ANIME THEMES & MODS")
         self.add_channel_btn("theme_manager", "theme-manager")
         self.add_channel_btn("colors", "color-palette")
         self.add_channel_btn("voice", "voice-and-video")
         self.add_channel_btn("layout", "layout-and-clearance")
 
-        self.add_category_header("BETTERDISCORD ADDONS")
-        self.add_channel_btn("bd_store", "download-ui-and-plugins")
+        self.add_category_header("BETTERDISCORD STUDIO")
+        self.add_channel_btn("bd_theme_studio", "upload-and-modify-themes")
+        self.add_channel_btn("bd_plugin_studio", "upload-and-manage-plugins")
+        self.add_channel_btn("discord_ui", "discord-ui-enhancements")
 
         self.add_category_header("EXTENSIONS & PACKAGES")
         self.add_channel_btn("packager", "export-import-themes")
@@ -462,10 +479,18 @@ class DiscordStyledStudio:
             self.top_channel_title.config(text="layout-and-clearance")
             self.top_topic.config(text="| Window clearance (anti-collision), zero-lag mode, avatar grid guard")
             self.render_layout_tab()
-        elif tab_id == "bd_store":
-            self.top_channel_title.config(text="betterdiscord-addons-store")
-            self.top_topic.config(text="| Download BetterDiscord UI themes & plugins directly with 1-click")
-            self.render_bd_store_tab()
+        elif tab_id == "bd_theme_studio":
+            self.top_channel_title.config(text="upload-and-modify-themes")
+            self.top_topic.config(text="| Upload BetterDiscord themes (.css / .theme.css) and customize them with live editor")
+            self.render_bd_theme_studio_tab()
+        elif tab_id == "bd_plugin_studio":
+            self.top_channel_title.config(text="upload-and-manage-plugins")
+            self.top_topic.config(text="| Upload BetterDiscord plugins (.plugin.js / .zip), inspect code, and toggle activation")
+            self.render_bd_plugin_studio_tab()
+        elif tab_id == "discord_ui":
+            self.top_channel_title.config(text="discord-ui-enhancements")
+            self.top_topic.config(text="| Hidden channels styling, compact mode, avatar privacy blur, and smooth animations")
+            self.render_discord_ui_tab()
         elif tab_id == "packager":
             self.top_channel_title.config(text="export-import-themes")
             self.top_topic.config(text="| Export and import full custom themes (.zip bundle)")
@@ -1089,12 +1114,13 @@ class DiscordStyledStudio:
                 messagebox.showerror("Error", msg)
 
     # -------------------------------------------------------------
-    # TAB: BETTERDISCORD ADDON STORE (THEMES & PLUGINS)
+    # TAB: BETTERDISCORD THEME STUDIO (UPLOAD & LIVE MODIFIER)
     # -------------------------------------------------------------
-    def render_bd_store_tab(self):
+    def render_bd_theme_studio_tab(self):
         c = self.content_scroll
+        themes = bd_customizer.list_installed_themes()
 
-        # 1. Store Header & Powered by BetterDiscord Card
+        # 1. Header Banner & Upload Card
         card_head = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
         card_head.pack(fill="x", pady=(0, 14))
 
@@ -1104,126 +1130,624 @@ class DiscordStyledStudio:
         title_col = tk.Frame(head_row, bg=C_CARD)
         title_col.pack(side="left", fill="both", expand=True)
 
-        tk.Label(title_col, text="BetterDiscord Addon Store & UI Downloader", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        desc = "Download popular community UI themes and plugins directly into BetterDiscord with 1-click. No manual file moving required."
-        tk.Label(title_col, text=desc, font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED, wraplength=640, justify="left").pack(anchor="w", pady=(2, 4))
+        tk.Label(title_col, text="BetterDiscord Theme Studio & Customizer", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        desc = "Upload any BetterDiscord theme (.theme.css / .css) from your computer or internet, and use the built-in live modifier to tweak colors, wallpapers, and CSS variables."
+        tk.Label(title_col, text=desc, font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED, wraplength=640, justify="left").pack(anchor="w", pady=(2, 6))
 
-        # Big Distinction Badge
-        badge_frame = tk.Frame(head_row, bg="#5865f2", padx=14, pady=8)
-        badge_frame.pack(side="right", padx=(10, 0))
-        tk.Label(badge_frame, text="POWERED BY", font=("DejaVu Sans", 7, "bold"), bg="#5865f2", fg="#e0e3ff").pack(anchor="center")
-        tk.Label(badge_frame, text="BetterDiscord Engine", font=("DejaVu Sans", 9, "bold"), bg="#5865f2", fg="#ffffff").pack(anchor="center")
+        badge = tk.Frame(head_row, bg=C_PURPLE, padx=12, pady=6)
+        badge.pack(side="right", padx=(10, 0))
+        tk.Label(badge, text="THEME MODIFIER", font=("DejaVu Sans", 7, "bold"), bg=C_PURPLE, fg="#10121a").pack(anchor="center")
+        tk.Label(badge, text="Live CSS Customizer", font=("DejaVu Sans", 8, "bold"), bg=C_PURPLE, fg="#10121a").pack(anchor="center")
 
         tk.Frame(card_head, bg=C_BORDER, height=1).pack(fill="x", pady=10)
 
-        # BetterDiscord Directory Status & Open Buttons
-        bd_base, bd_themes, bd_plugins = bd_store.get_bd_dirs()
-        bd_status = bd_injector.check_status()
-        status_txt = "Active & Injected" if bd_status.get("injected") else "Installed (Not Injected)"
+        # Upload Action Buttons
+        act_row = tk.Frame(card_head, bg=C_CARD)
+        act_row.pack(fill="x")
 
-        info_row = tk.Frame(card_head, bg=C_CARD)
-        info_row.pack(fill="x")
+        btn_up = tk.Button(act_row, text="+ UPLOAD BETTERDISCORD THEME (.theme.css)", font=("DejaVu Sans", 9, "bold"),
+                           bg=C_PINK, fg="#10121a", relief="flat", padx=16, pady=6, cursor="hand2",
+                           command=self.action_upload_bd_theme)
+        btn_up.pack(side="left", padx=(0, 10))
 
-        stat_badge_col = tk.Frame(info_row, bg=C_CARD)
-        stat_badge_col.pack(side="left")
-        tk.Label(stat_badge_col, text=f"Engine Status: {status_txt}", font=("DejaVu Sans", 8, "bold"), bg=C_CARD, fg=C_GREEN if bd_status.get("injected") else C_MUTED).pack(side="left")
-        tk.Label(stat_badge_col, text=f"  |  Location: {bd_base}", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED).pack(side="left")
+        btn_fld = tk.Button(act_row, text="Open Themes Folder", font=("DejaVu Sans", 8),
+                            bg="#2e3244", fg=C_TEXT_H, relief="flat", padx=12, pady=6, cursor="hand2",
+                            command=lambda: self.open_folder_system(bd_customizer.THEMES_DIR))
+        btn_fld.pack(side="left")
 
-        actions_sub = tk.Frame(info_row, bg=C_CARD)
-        actions_sub.pack(side="right")
-
-        tk.Button(actions_sub, text="Open Themes Folder", font=("DejaVu Sans", 8), bg="#3b3e45", fg=C_TEXT_H,
-                  relief="flat", padx=8, pady=3, cursor="hand2",
-                  command=lambda: self.open_folder_system(bd_themes)).pack(side="left", padx=(0, 6))
-
-        tk.Button(actions_sub, text="Open Plugins Folder", font=("DejaVu Sans", 8), bg="#3b3e45", fg=C_TEXT_H,
-                  relief="flat", padx=8, pady=3, cursor="hand2",
-                  command=lambda: self.open_folder_system(bd_plugins)).pack(side="left")
-
-        # 2. Custom URL Downloader
-        card_url = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        # 2. Raw URL Downloader Card
+        card_url = tk.Frame(c, bg=C_CARD, padx=16, pady=12)
         card_url.pack(fill="x", pady=(0, 14))
 
-        tk.Label(card_url, text="Direct Link Downloader (Custom GitHub / BetterDiscord Addon URL)", font=("DejaVu Sans", 9, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        tk.Label(card_url, text="Paste any .theme.css or .plugin.js raw URL to automatically download and install it into BetterDiscord:", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(1, 6))
+        tk.Label(card_url, text="Import Theme from Direct URL (GitHub / Pastebin)", font=("DejaVu Sans", 9, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        row_u = tk.Frame(card_url, bg=C_CARD)
+        row_u.pack(fill="x", pady=(6, 0))
 
-        row_input = tk.Frame(card_url, bg=C_CARD)
-        row_input.pack(fill="x")
+        self.theme_url_entry = tk.Entry(row_u, bg=C_CARD_ALT, fg="#ffffff", insertbackground="#ffffff", relief="flat", font=("DejaVu Sans", 9))
+        self.theme_url_entry.pack(side="left", fill="x", expand=True, ipady=5, padx=(0, 8))
 
-        self.bd_url_entry = tk.Entry(row_input, bg="#1e1f22", fg="#ffffff", insertbackground="#ffffff", relief="flat", font=("DejaVu Sans", 9))
-        self.bd_url_entry.pack(side="left", fill="x", expand=True, ipady=6, padx=(0, 8))
-
-        btn_url_dl = tk.Button(row_input, text="Download & Install URL", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#ffffff",
-                               relief="flat", padx=14, pady=5, cursor="hand2",
-                               command=self.action_install_from_url)
+        btn_url_dl = tk.Button(row_u, text="Download & Import URL", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#ffffff",
+                               relief="flat", padx=14, pady=5, cursor="hand2", command=self.action_import_theme_url)
         btn_url_dl.pack(side="right")
 
-        # 3. Addon Filter & Catalog
-        card_addons = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
-        card_addons.pack(fill="x")
+        # 3. Installed BetterDiscord Themes List
+        card_list = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_list.pack(fill="x")
 
-        filter_row = tk.Frame(card_addons, bg=C_CARD)
-        filter_row.pack(fill="x", pady=(0, 10))
+        tk.Label(card_list, text=f"Installed BetterDiscord Themes ({len(themes)})", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w", pady=(0, 10))
 
-        tk.Label(filter_row, text="Curated Community Catalog", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(side="left")
+        if not themes:
+            tk.Label(card_list, text="No BetterDiscord themes installed yet. Click '+ UPLOAD BETTERDISCORD THEME' above to add one!", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=10)
+        else:
+            for t in themes:
+                self.create_theme_item_card(card_list, t)
 
-        curr_filter = getattr(self, "bd_filter", "all")
+    def create_theme_item_card(self, parent, t):
+        card = tk.Frame(parent, bg=C_CARD_ALT, padx=14, pady=12)
+        card.pack(fill="x", pady=5)
 
-        btn_all = tk.Button(filter_row, text="All Addons (12)", font=("DejaVu Sans", 8, "bold" if curr_filter == "all" else "normal"),
-                            bg=C_BLURPLE if curr_filter == "all" else "#3b3e45", fg="#ffffff",
-                            relief="flat", padx=10, pady=3, cursor="hand2", command=lambda: self.set_bd_filter("all"))
-        btn_all.pack(side="right", padx=(4, 0))
+        top_r = tk.Frame(card, bg=C_CARD_ALT)
+        top_r.pack(fill="x")
 
-        btn_plug = tk.Button(filter_row, text="Plugins (6)", font=("DejaVu Sans", 8, "bold" if curr_filter == "plugin" else "normal"),
-                             bg=C_BLURPLE if curr_filter == "plugin" else "#3b3e45", fg="#ffffff",
-                             relief="flat", padx=10, pady=3, cursor="hand2", command=lambda: self.set_bd_filter("plugin"))
-        btn_plug.pack(side="right", padx=(4, 0))
+        status_color = C_GREEN if t["is_enabled"] else C_MUTED
+        status_txt = "ACTIVE IN DISCORD" if t["is_enabled"] else "INACTIVE"
+        tk.Label(top_r, text=f"[{status_txt}]", font=("DejaVu Sans", 7, "bold"), bg=C_CARD_ALT, fg=status_color).pack(side="left", padx=(0, 8))
 
-        btn_thm = tk.Button(filter_row, text="Themes / UI (6)", font=("DejaVu Sans", 8, "bold" if curr_filter == "theme" else "normal"),
-                            bg=C_BLURPLE if curr_filter == "theme" else "#3b3e45", fg="#ffffff",
-                            relief="flat", padx=10, pady=3, cursor="hand2", command=lambda: self.set_bd_filter("theme"))
-        btn_thm.pack(side="right")
+        tk.Label(top_r, text=t["name"], font=("DejaVu Sans", 10, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(side="left")
+        tk.Label(top_r, text=f"v{t['version']} by {t['author']}  ({t['size_kb']} KB)", font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED).pack(side="left", padx=8)
 
-        items = [x for x in bd_store.CURATED_ADDONS if curr_filter == "all" or x["type"] == curr_filter]
+        tk.Label(card, text=t["description"], font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED, wraplength=640, justify="left").pack(anchor="w", pady=(4, 8))
 
-        for item in items:
-            is_inst = bd_store.is_addon_installed(item["type"], item["filename"])
-            row_item = tk.Frame(card_addons, bg=C_CARD_ALT, padx=12, pady=10)
-            row_item.pack(fill="x", pady=4)
+        act_r = tk.Frame(card, bg=C_CARD_ALT)
+        act_r.pack(fill="x")
 
-            left_c = tk.Frame(row_item, bg=C_CARD_ALT)
-            left_c.pack(side="left", fill="both", expand=True)
+        # Toggle Button
+        if t["is_enabled"]:
+            btn_tog = tk.Button(act_r, text="Disable Theme", font=("DejaVu Sans", 8), bg="#3b3e4f", fg=C_TEXT,
+                                relief="flat", padx=10, pady=3, cursor="hand2",
+                                command=lambda fn=t["filename"], nm=t["name"]: self.action_toggle_theme(nm, fn, False))
+        else:
+            btn_tog = tk.Button(act_r, text="Enable / Use Theme", font=("DejaVu Sans", 8, "bold"), bg=C_GREEN, fg="#ffffff",
+                                relief="flat", padx=10, pady=3, cursor="hand2",
+                                command=lambda fn=t["filename"], nm=t["name"]: self.action_toggle_theme(nm, fn, True))
+        btn_tog.pack(side="left", padx=(0, 6))
 
-            t_row = tk.Frame(left_c, bg=C_CARD_ALT)
-            t_row.pack(fill="x")
+        # Modify / Edit Button
+        btn_mod = tk.Button(act_r, text="[MODIFY THEME / EDIT CSS]", font=("DejaVu Sans", 8, "bold"), bg=C_PINK, fg="#10121a",
+                            relief="flat", padx=12, pady=3, cursor="hand2",
+                            command=lambda th=t: self.open_theme_modifier(th))
+        btn_mod.pack(side="left", padx=(0, 6))
 
-            type_bg = "#805ad5" if item["type"] == "theme" else "#2b6cb0"
-            type_txt = "THEME (UI)" if item["type"] == "theme" else "PLUGIN"
-            tk.Label(t_row, text=f" {type_txt} ", font=("DejaVu Sans", 7, "bold"), bg=type_bg, fg="#ffffff").pack(side="left", padx=(0, 6))
+        # Duplicate Button
+        btn_dup = tk.Button(act_r, text="Duplicate / Clone", font=("DejaVu Sans", 8), bg="#2b2e3e", fg=C_TEXT_H,
+                            relief="flat", padx=8, pady=3, cursor="hand2",
+                            command=lambda fn=t["filename"]: self.action_clone_theme(fn))
+        btn_dup.pack(side="left", padx=(0, 6))
 
-            tk.Label(t_row, text=f"{item['name']} v{item['version']}", font=("DejaVu Sans", 9, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(side="left")
-            tk.Label(t_row, text=f"  •  by {item['author']} ({item['tag']})", font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED).pack(side="left")
+        # Delete Button (protect main WhisperMeALoveSong theme from accidental delete)
+        if t["filename"] != "WhisperMeALoveSong.theme.css":
+            btn_del = tk.Button(act_r, text="Delete", font=("DejaVu Sans", 8), bg=C_RED, fg="#ffffff",
+                                relief="flat", padx=8, pady=3, cursor="hand2",
+                                command=lambda fn=t["filename"], nm=t["name"]: self.action_delete_theme(fn, nm))
+            btn_del.pack(side="right")
 
-            tk.Label(left_c, text=item["description"], font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED, wraplength=620, justify="left").pack(anchor="w", pady=(3, 0))
+    def action_upload_bd_theme(self):
+        f = filedialog.askopenfilename(
+            title="Select BetterDiscord Theme to Upload",
+            filetypes=[("BetterDiscord Theme / CSS", "*.theme.css *.css"), ("All Files", "*.*")]
+        )
+        if not f:
+            return
+        try:
+            res = bd_customizer.upload_theme(f)
+            self.show_tab("bd_theme_studio")
+            messagebox.showinfo(
+                "Theme Uploaded & Registered",
+                f"Successfully uploaded and installed BetterDiscord theme:\n\n"
+                f"Name: {res['meta']['name']}\n"
+                f"Author: {res['meta']['author']}\n"
+                f"File: {res['filename']}\n\n"
+                f"It is now registered in BetterDiscord! You can click '[MODIFY THEME / EDIT CSS]' to customize its colors, wallpaper, or code."
+            )
+        except Exception as e:
+            messagebox.showerror("Upload Error", f"Failed to upload theme:\n{e}")
 
-            right_c = tk.Frame(row_item, bg=C_CARD_ALT)
-            right_c.pack(side="right", padx=(10, 0))
+    def action_import_theme_url(self):
+        url = getattr(self, "theme_url_entry", None)
+        if not url:
+            return
+        url_text = url.get().strip()
+        if not url_text or not (url_text.startswith("http://") or url_text.startswith("https://")):
+            messagebox.showwarning("Notice", "Please enter a valid HTTP or HTTPS URL to raw theme CSS.")
+            return
 
-            if is_inst:
-                tk.Label(right_c, text="[Installed]", font=("DejaVu Sans", 8, "bold"), bg=C_CARD_ALT, fg=C_GREEN).pack(side="left", padx=(0, 8))
-                btn_del = tk.Button(right_c, text="Uninstall", font=("DejaVu Sans", 8), bg=C_RED, fg="#ffffff",
-                                    relief="flat", padx=10, pady=3, cursor="hand2",
-                                    command=lambda it=item: self.action_uninstall_bd_addon(it))
-                btn_del.pack(side="left")
-            else:
-                btn_dl = tk.Button(right_c, text="Download & Install", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#ffffff",
-                                   relief="flat", padx=12, pady=4, cursor="hand2",
-                                   command=lambda it=item: self.action_download_bd_addon(it))
-                btn_dl.pack(side="left")
+        def _task():
+            import urllib.request
+            try:
+                req = urllib.request.Request(url_text, headers={"User-Agent": "Mozilla/5.0"})
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    data = resp.read()
 
-    def set_bd_filter(self, filter_name):
-        self.bd_filter = filter_name
-        self.show_tab("bd_store")
+                base = os.path.basename(url_text.split("?")[0])
+                if not (base.endswith(".theme.css") or base.endswith(".css")):
+                    base = "DownloadedTheme.theme.css"
+                elif base.endswith(".css") and not base.endswith(".theme.css"):
+                    base = base[:-4] + ".theme.css"
+
+                target = os.path.join(bd_customizer.THEMES_DIR, base)
+                with open(target, "wb") as f:
+                    f.write(data)
+
+                with open(target, "r", encoding="utf-8", errors="ignore") as f:
+                    meta = bd_customizer.parse_metadata(f.read(4000))
+                bd_customizer.toggle_theme(meta["name"], base, True)
+
+                self.root.after(0, lambda: [
+                    self.show_tab("bd_theme_studio"),
+                    messagebox.showinfo("Success", f"Theme downloaded and installed:\n{meta['name']} by {meta['author']}")
+                ])
+            except Exception as e:
+                self.root.after(0, lambda err=e: messagebox.showerror("Download Failed", f"Failed to download theme from URL:\n{err}"))
+
+        threading.Thread(target=_task, daemon=True).start()
+
+    def action_toggle_theme(self, name, filename, enable):
+        bd_customizer.toggle_theme(name, filename, enable)
+        self.show_tab("bd_theme_studio")
+        state = "Enabled" if enable else "Disabled"
+        messagebox.showinfo("Theme Status", f"Theme '{name}' is now {state} in BetterDiscord!\n\nPress Reload (Ctrl+R) to update Discord.")
+
+    def action_clone_theme(self, filename):
+        prompt_win = tk.Toplevel(self.root)
+        prompt_win.title("Duplicate Theme")
+        prompt_win.geometry("420x170")
+        prompt_win.configure(bg=C_CARD)
+        prompt_win.transient(self.root)
+        prompt_win.grab_set()
+
+        tk.Label(prompt_win, text="Enter a name for your cloned theme:", font=("DejaVu Sans", 9, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w", padx=16, pady=(16, 6))
+        entry = tk.Entry(prompt_win, bg=C_CARD_ALT, fg="#ffffff", insertbackground="#ffffff", relief="flat", font=("DejaVu Sans", 10))
+        entry.pack(fill="x", padx=16, ipady=4)
+        entry.insert(0, "My Custom Modded Theme")
+        entry.focus_set()
+
+        def _do_clone():
+            new_name = entry.get().strip()
+            if not new_name:
+                return
+            prompt_win.destroy()
+            try:
+                new_fn = bd_customizer.clone_theme(filename, new_name)
+                self.show_tab("bd_theme_studio")
+                messagebox.showinfo("Theme Cloned", f"Successfully created cloned theme:\n{new_fn}\n\nYou can now modify it without altering the original!")
+            except Exception as e:
+                messagebox.showerror("Clone Error", str(e))
+
+        btn_row = tk.Frame(prompt_win, bg=C_CARD)
+        btn_row.pack(fill="x", padx=16, pady=(16, 0))
+        tk.Button(btn_row, text="Create Clone", font=("DejaVu Sans", 8, "bold"), bg=C_PINK, fg="#10121a", relief="flat", padx=12, pady=4, cursor="hand2", command=_do_clone).pack(side="right")
+        tk.Button(btn_row, text="Cancel", font=("DejaVu Sans", 8), bg="#3b3e4f", fg=C_TEXT, relief="flat", padx=10, pady=4, cursor="hand2", command=prompt_win.destroy).pack(side="right", padx=(0, 8))
+
+    def action_delete_theme(self, filename, name):
+        if messagebox.askyesno("Confirm Delete", f"Are you sure you want to delete BetterDiscord theme '{name}' ({filename})?\n\nThis cannot be undone."):
+            bd_customizer.delete_theme(filename)
+            self.show_tab("bd_theme_studio")
+
+    def open_theme_modifier(self, theme_info):
+        filename = theme_info["filename"]
+        try:
+            full_css = bd_customizer.read_theme_full_css(filename)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to read theme file:\n{e}")
+            return
+
+        mod_win = tk.Toplevel(self.root)
+        mod_win.title(f"Discord-Chan Theme Studio - Modify Theme: {theme_info['name']}")
+        mod_win.geometry("980x720")
+        mod_win.configure(bg="#11131a")
+        mod_win.transient(self.root)
+
+        # Header Bar
+        top = tk.Frame(mod_win, bg="#181b26", height=50, padx=16)
+        top.pack(fill="x")
+        top.pack_propagate(False)
+
+        col_t = tk.Frame(top, bg="#181b26")
+        col_t.pack(side="left", fill="both", expand=True, pady=6)
+        tk.Label(col_t, text=f"THEME MODIFIER: {theme_info['name']}", font=("DejaVu Sans", 11, "bold"), bg="#181b26", fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(col_t, text=f"File: {filename}  |  Author: {theme_info['author']}  |  Version: {theme_info['version']}", font=("DejaVu Sans", 8), bg="#181b26", fg=C_MUTED).pack(anchor="w")
+
+        btn_close = tk.Button(top, text="Close", font=("DejaVu Sans", 8), bg="#2b2f40", fg=C_TEXT_H, relief="flat", padx=12, pady=4, cursor="hand2", command=mod_win.destroy)
+        btn_close.pack(side="right", pady=10)
+
+        # Quick Tuner Card (Accent Color & Wallpaper replacer)
+        tuner_card = tk.Frame(mod_win, bg="#161922", padx=16, pady=12)
+        tuner_card.pack(fill="x", padx=14, pady=10)
+
+        tk.Label(tuner_card, text="Quick Variable Modifiers (Color & Wallpaper Replacer)", font=("DejaVu Sans", 9, "bold"), bg="#161922", fg=C_PINK).pack(anchor="w")
+        tk.Label(tuner_card, text="Quickly customize common theme variables without manually typing CSS:", font=("DejaVu Sans", 8), bg="#161922", fg=C_MUTED).pack(anchor="w", pady=(1, 8))
+
+        row_vars = tk.Frame(tuner_card, bg="#161922")
+        row_vars.pack(fill="x")
+
+        # Color Tuner
+        col_mod_color = tk.StringVar(value="#ff85a2")
+        lbl_col_preview = tk.Label(row_vars, text="      ", bg=col_mod_color.get(), relief="solid", borderwidth=1)
+        lbl_col_preview.pack(side="left", padx=(0, 6))
+
+        def _pick_color():
+            c = colorchooser.askcolor(col_mod_color.get(), title="Select New Theme Accent Color")[1]
+            if c:
+                col_mod_color.set(c)
+                lbl_col_preview.config(bg=c)
+
+        btn_c_pick = tk.Button(row_vars, text="Pick Accent Color", font=("DejaVu Sans", 8, "bold"), bg="#2d3244", fg=C_TEXT_H, relief="flat", padx=10, pady=3, cursor="hand2", command=_pick_color)
+        btn_c_pick.pack(side="left", padx=(0, 14))
+
+        # Wallpaper Tuner
+        wp_mod_val = tk.StringVar(value="")
+        tk.Label(row_vars, text="Custom Wallpaper:", font=("DejaVu Sans", 8, "bold"), bg="#161922", fg=C_TEXT).pack(side="left", padx=(0, 6))
+        entry_wp = tk.Entry(row_vars, textvariable=wp_mod_val, bg="#10121a", fg="#ffffff", insertbackground="#ffffff", relief="flat", font=("DejaVu Sans", 8), width=24)
+        entry_wp.pack(side="left", fill="x", expand=True, ipady=3, padx=(0, 6))
+
+        def _browse_wp():
+            f = filedialog.askopenfilename(filetypes=[("Image Files", "*.jpg *.jpeg *.png *.webp *.gif"), ("All Files", "*.*")])
+            if f:
+                data_uri = theme_engine.get_image_data_uri(f)
+                if data_uri:
+                    wp_mod_val.set(data_uri)
+                else:
+                    wp_mod_val.set(f)
+
+        btn_browse = tk.Button(row_vars, text="Browse Image...", font=("DejaVu Sans", 8), bg="#2d3244", fg=C_TEXT_H, relief="flat", padx=8, pady=3, cursor="hand2", command=_browse_wp)
+        btn_browse.pack(side="left", padx=(0, 10))
+
+        # CSS Code Editor Area
+        editor_frame = tk.Frame(mod_win, bg="#11131a", padx=14)
+        editor_frame.pack(fill="both", expand=True)
+
+        toolbar = tk.Frame(editor_frame, bg="#161922", padx=8, pady=6)
+        toolbar.pack(fill="x", pady=(0, 4))
+
+        tk.Label(toolbar, text="Raw Theme CSS Editor", font=("DejaVu Sans", 8, "bold"), bg="#161922", fg=C_TEXT_H).pack(side="left", padx=(0, 10))
+
+        # Search bar
+        tk.Label(toolbar, text="Find:", font=("DejaVu Sans", 7), bg="#161922", fg=C_MUTED).pack(side="left")
+        find_ent = tk.Entry(toolbar, width=14, bg="#10121a", fg="#ffffff", insertbackground="#ffffff", relief="flat", font=("DejaVu Sans", 8))
+        find_ent.pack(side="left", padx=4)
+
+        tk.Label(toolbar, text="Replace:", font=("DejaVu Sans", 7), bg="#161922", fg=C_MUTED).pack(side="left")
+        rep_ent = tk.Entry(toolbar, width=14, bg="#10121a", fg="#ffffff", insertbackground="#ffffff", relief="flat", font=("DejaVu Sans", 8))
+        rep_ent.pack(side="left", padx=4)
+
+        text_scroll = tk.Scrollbar(editor_frame)
+        text_editor = tk.Text(editor_frame, wrap="none", bg="#0e1017", fg="#d1d7e0",
+                              insertbackground="#ffffff", selectbackground=C_BLURPLE,
+                              font=("Courier", 10), padx=10, pady=8,
+                              yscrollcommand=text_scroll.set)
+        text_scroll.config(command=text_editor.yview)
+        text_editor.pack(side="left", fill="both", expand=True)
+        text_scroll.pack(side="right", fill="y")
+
+        text_editor.insert("1.0", full_css)
+
+        def _do_replace_all():
+            target = find_ent.get()
+            rep = rep_ent.get()
+            if not target:
+                return
+            content = text_editor.get("1.0", "end-1c")
+            count = content.count(target)
+            if count == 0:
+                messagebox.showinfo("Find & Replace", f"'{target}' not found in CSS.")
+                return
+            new_content = content.replace(target, rep)
+            text_editor.delete("1.0", "end")
+            text_editor.insert("1.0", new_content)
+            messagebox.showinfo("Find & Replace", f"Replaced {count} occurrence(s) of '{target}'!")
+
+        btn_rep = tk.Button(toolbar, text="Replace All", font=("DejaVu Sans", 7, "bold"), bg="#3b3f52", fg="#ffffff", relief="flat", padx=6, pady=2, cursor="hand2", command=_do_replace_all)
+        btn_rep.pack(side="left", padx=4)
+
+        # Snippet inserters
+        def _insert_snippet(snip):
+            text_editor.insert("end", "\n" + snip + "\n")
+            text_editor.see("end")
+
+        tk.Label(toolbar, text="| Snippets:", font=("DejaVu Sans", 7), bg="#161922", fg=C_MUTED).pack(side="left", padx=(10, 4))
+        tk.Button(toolbar, text="+ Glass Chat", font=("DejaVu Sans", 7), bg="#2d3244", fg=C_PINK, relief="flat", padx=5, pady=2, cursor="hand2",
+                  command=lambda: _insert_snippet(".messagesWrapper__36d07, .chatContent__52833 { background: transparent !important; }")).pack(side="left", padx=2)
+        tk.Button(toolbar, text="+ Hidden Ch", font=("DejaVu Sans", 7), bg="#2d3244", fg=C_CYAN, relief="flat", padx=5, pady=2, cursor="hand2",
+                  command=lambda: _insert_snippet("[class*='modeLocked_'] { opacity: 0.65 !important; }")).pack(side="left", padx=2)
+        tk.Button(toolbar, text="+ Avatar Ring", font=("DejaVu Sans", 7), bg="#2d3244", fg=C_PURPLE, relief="flat", padx=5, pady=2, cursor="hand2",
+                  command=lambda: _insert_snippet("[class*='avatar__'] { outline: 2px solid var(--accent-pink, #ff85a2) !important; outline-offset: 1px !important; }")).pack(side="left", padx=2)
+
+        def _apply_tuner():
+            cur_code = text_editor.get("1.0", "end-1c")
+            replacements = {}
+            if col_mod_color.get():
+                replacements["--main-color"] = col_mod_color.get()
+                replacements["--accent-pink"] = col_mod_color.get()
+                replacements["--accent-color"] = col_mod_color.get()
+            if wp_mod_val.get():
+                replacements["--anime-wallpaper"] = f"url('{wp_mod_val.get()}')"
+                replacements["--background-image"] = f"url('{wp_mod_val.get()}')"
+            updated = bd_customizer.apply_variable_modifications(cur_code, replacements)
+            text_editor.delete("1.0", "end")
+            text_editor.insert("1.0", updated)
+            messagebox.showinfo("Tuner Applied", "Quick variables updated in the CSS editor! Click 'Save Changes' to apply to Discord.")
+
+        btn_apply_tuner = tk.Button(row_vars, text="APPLY QUICK TWEAKS", font=("DejaVu Sans", 8, "bold"), bg=C_GREEN, fg="#ffffff", relief="flat", padx=10, pady=3, cursor="hand2", command=_apply_tuner)
+        btn_apply_tuner.pack(side="right")
+
+        # Bottom Action Bar
+        bot_bar = tk.Frame(mod_win, bg="#161922", padx=16, pady=10)
+        bot_bar.pack(fill="x")
+
+        def _save_changes(live=False):
+            new_css = text_editor.get("1.0", "end-1c")
+            try:
+                bd_customizer.save_theme_full_css(filename, new_css)
+                if live:
+                    bd_customizer.toggle_theme(theme_info["name"], filename, True)
+                    self.restart_discord_safe()
+                    messagebox.showinfo("Saved & Applied", f"Theme '{theme_info['name']}' saved and hot-reloaded in Discord!")
+                else:
+                    messagebox.showinfo("Saved", f"Theme '{theme_info['name']}' changes saved successfully!")
+                self.show_tab("bd_theme_studio")
+            except Exception as e:
+                messagebox.showerror("Save Error", str(e))
+
+        btn_save_apply = tk.Button(bot_bar, text="LIVE APPLY TO DISCORD", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#ffffff", relief="flat", padx=14, pady=5, cursor="hand2", command=lambda: _save_changes(live=True))
+        btn_save_apply.pack(side="left")
+
+        btn_save = tk.Button(bot_bar, text="SAVE CHANGES", font=("DejaVu Sans", 8, "bold"), bg=C_PINK, fg="#10121a", relief="flat", padx=14, pady=5, cursor="hand2", command=lambda: _save_changes(live=False))
+        btn_save.pack(side="left", padx=8)
+
+        btn_dup_save = tk.Button(bot_bar, text="Save As New Theme...", font=("DejaVu Sans", 8), bg="#2d3244", fg=C_TEXT_H, relief="flat", padx=10, pady=5, cursor="hand2", command=lambda: self.action_clone_theme(filename))
+        btn_dup_save.pack(side="left")
+
+    # -------------------------------------------------------------
+    # TAB: BETTERDISCORD PLUGIN MANAGER (UPLOAD & MANAGE)
+    # -------------------------------------------------------------
+    def render_bd_plugin_studio_tab(self):
+        c = self.content_scroll
+        plugins = bd_customizer.list_installed_plugins()
+
+        # 1. Header Card
+        card_head = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_head.pack(fill="x", pady=(0, 14))
+
+        head_row = tk.Frame(card_head, bg=C_CARD)
+        head_row.pack(fill="x")
+
+        title_col = tk.Frame(head_row, bg=C_CARD)
+        title_col.pack(side="left", fill="both", expand=True)
+
+        tk.Label(title_col, text="BetterDiscord Plugin Manager & Uploader", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        desc = "Upload any BetterDiscord plugin (.plugin.js / .js / .zip), inspect source code, toggle active state, and manage your Discord client enhancements."
+        tk.Label(title_col, text=desc, font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED, wraplength=640, justify="left").pack(anchor="w", pady=(2, 6))
+
+        badge = tk.Frame(head_row, bg=C_CYAN, padx=12, pady=6)
+        badge.pack(side="right", padx=(10, 0))
+        tk.Label(badge, text="PLUGIN ENGINE", font=("DejaVu Sans", 7, "bold"), bg=C_CYAN, fg="#10121a").pack(anchor="center")
+        tk.Label(badge, text="BetterDiscord JS API", font=("DejaVu Sans", 8, "bold"), bg=C_CYAN, fg="#10121a").pack(anchor="center")
+
+        tk.Frame(card_head, bg=C_BORDER, height=1).pack(fill="x", pady=10)
+
+        # Upload Action Buttons
+        act_row = tk.Frame(card_head, bg=C_CARD)
+        act_row.pack(fill="x")
+
+        btn_up = tk.Button(act_row, text="+ UPLOAD BETTERDISCORD PLUGIN (.js / .zip)", font=("DejaVu Sans", 9, "bold"),
+                           bg=C_CYAN, fg="#10121a", relief="flat", padx=16, pady=6, cursor="hand2",
+                           command=self.action_upload_bd_plugin)
+        btn_up.pack(side="left", padx=(0, 10))
+
+        btn_fld = tk.Button(act_row, text="Open Plugins Folder", font=("DejaVu Sans", 8),
+                            bg="#2e3244", fg=C_TEXT_H, relief="flat", padx=12, pady=6, cursor="hand2",
+                            command=lambda: self.open_folder_system(bd_customizer.PLUGINS_DIR))
+        btn_fld.pack(side="left", padx=(0, 10))
+
+        btn_rel = tk.Button(act_row, text="Hot-Reload Discord Client", font=("DejaVu Sans", 8, "bold"),
+                            bg=C_BLURPLE, fg="#ffffff", relief="flat", padx=12, pady=6, cursor="hand2",
+                            command=self.restart_discord_safe)
+        btn_rel.pack(side="left")
+
+        # 2. Installed Plugins List
+        card_list = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_list.pack(fill="x")
+
+        tk.Label(card_list, text=f"Installed BetterDiscord Plugins ({len(plugins)})", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w", pady=(0, 10))
+
+        if not plugins:
+            tk.Label(card_list, text="No plugins installed. Click '+ UPLOAD BETTERDISCORD PLUGIN' above to add your first plugin!", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=10)
+        else:
+            for p in plugins:
+                self.create_plugin_item_card(card_list, p)
+
+    def create_plugin_item_card(self, parent, p):
+        card = tk.Frame(parent, bg=C_CARD_ALT, padx=14, pady=12)
+        card.pack(fill="x", pady=5)
+
+        top_r = tk.Frame(card, bg=C_CARD_ALT)
+        top_r.pack(fill="x")
+
+        status_color = C_GREEN if p["is_enabled"] else C_MUTED
+        status_txt = "RUNNING / ACTIVE" if p["is_enabled"] else "DISABLED"
+        tk.Label(top_r, text=f"[{status_txt}]", font=("DejaVu Sans", 7, "bold"), bg=C_CARD_ALT, fg=status_color).pack(side="left", padx=(0, 8))
+
+        tk.Label(top_r, text=p["name"], font=("DejaVu Sans", 10, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(side="left")
+        tk.Label(top_r, text=f"v{p['version']} by {p['author']}  ({p['size_kb']} KB)", font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED).pack(side="left", padx=8)
+
+        tk.Label(card, text=p["description"], font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED, wraplength=640, justify="left").pack(anchor="w", pady=(4, 8))
+
+        act_r = tk.Frame(card, bg=C_CARD_ALT)
+        act_r.pack(fill="x")
+
+        # Toggle Button
+        if p["is_enabled"]:
+            btn_tog = tk.Button(act_r, text="Deactivate Plugin", font=("DejaVu Sans", 8), bg="#3b3e4f", fg=C_TEXT,
+                                relief="flat", padx=10, pady=3, cursor="hand2",
+                                command=lambda fn=p["filename"], nm=p["name"]: self.action_toggle_plugin(nm, fn, False))
+        else:
+            btn_tog = tk.Button(act_r, text="Activate Plugin", font=("DejaVu Sans", 8, "bold"), bg=C_GREEN, fg="#ffffff",
+                                relief="flat", padx=10, pady=3, cursor="hand2",
+                                command=lambda fn=p["filename"], nm=p["name"]: self.action_toggle_plugin(nm, fn, True))
+        btn_tog.pack(side="left", padx=(0, 6))
+
+        # Inspect / Edit Code Button
+        btn_mod = tk.Button(act_r, text="[VIEW / EDIT CODE]", font=("DejaVu Sans", 8, "bold"), bg=C_CYAN, fg="#10121a",
+                            relief="flat", padx=12, pady=3, cursor="hand2",
+                            command=lambda pl=p: self.open_plugin_code_inspector(pl))
+        btn_mod.pack(side="left", padx=(0, 6))
+
+        # Delete Button (protect studio hotkey plugin from deletion)
+        if p["filename"] != "DiscordChanStudioHotkey.plugin.js":
+            btn_del = tk.Button(act_r, text="Delete", font=("DejaVu Sans", 8), bg=C_RED, fg="#ffffff",
+                                relief="flat", padx=8, pady=3, cursor="hand2",
+                                command=lambda fn=p["filename"], nm=p["name"]: self.action_delete_plugin(fn, nm))
+            btn_del.pack(side="right")
+
+    def action_upload_bd_plugin(self):
+        f = filedialog.askopenfilename(
+            title="Select BetterDiscord Plugin to Upload",
+            filetypes=[("BetterDiscord Plugin / JS / ZIP", "*.plugin.js *.js *.zip"), ("All Files", "*.*")]
+        )
+        if not f:
+            return
+        try:
+            installed_name = bd_customizer.upload_plugin(f)
+            self.show_tab("bd_plugin_studio")
+            messagebox.showinfo(
+                "Plugin Uploaded & Activated",
+                f"Successfully installed and activated BetterDiscord plugin:\n\n{installed_name}\n\n"
+                f"Tip: Click 'Hot-Reload Discord Client' or press Ctrl+R in Discord to start running it!"
+            )
+        except Exception as e:
+            messagebox.showerror("Upload Error", f"Failed to upload plugin:\n{e}")
+
+    def action_toggle_plugin(self, name, filename, enable):
+        bd_customizer.toggle_plugin(name, filename, enable)
+        self.show_tab("bd_plugin_studio")
+        state = "Activated" if enable else "Deactivated"
+        messagebox.showinfo("Plugin State", f"Plugin '{name}' is now {state}!\n\nHot-reload Discord (Ctrl+R) to apply changes.")
+
+    def action_delete_plugin(self, filename, name):
+        if messagebox.askyesno("Confirm Delete", f"Delete BetterDiscord plugin '{name}' ({filename})?"):
+            bd_customizer.delete_plugin(filename)
+            self.show_tab("bd_plugin_studio")
+
+    def open_plugin_code_inspector(self, plugin_info):
+        filename = plugin_info["filename"]
+        try:
+            content = bd_customizer.read_plugin_content(filename)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to read plugin:\n{e}")
+            return
+
+        p_win = tk.Toplevel(self.root)
+        p_win.title(f"Plugin Code Inspector: {plugin_info['name']}")
+        p_win.geometry("900x640")
+        p_win.configure(bg="#11131a")
+        p_win.transient(self.root)
+
+        top = tk.Frame(p_win, bg="#181b26", padx=14, pady=10)
+        top.pack(fill="x")
+        tk.Label(top, text=f"PLUGIN: {plugin_info['name']} v{plugin_info['version']}", font=("DejaVu Sans", 10, "bold"), bg="#181b26", fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(top, text=f"File: {filename}  |  by {plugin_info['author']}", font=("DejaVu Sans", 8), bg="#181b26", fg=C_MUTED).pack(anchor="w")
+
+        f_text = tk.Frame(p_win, bg="#11131a", padx=12, pady=8)
+        f_text.pack(fill="both", expand=True)
+
+        sc = tk.Scrollbar(f_text)
+        txt = tk.Text(f_text, wrap="none", bg="#0e1017", fg="#a6accd", insertbackground="#ffffff", selectbackground=C_BLURPLE, font=("Courier", 10), padx=8, pady=8, yscrollcommand=sc.set)
+        sc.config(command=txt.yview)
+        txt.pack(side="left", fill="both", expand=True)
+        sc.pack(side="right", fill="y")
+        txt.insert("1.0", content)
+
+        bot = tk.Frame(p_win, bg="#181b26", padx=14, pady=10)
+        bot.pack(fill="x")
+
+        def _save_plugin():
+            new_code = txt.get("1.0", "end-1c")
+            try:
+                bd_customizer.save_plugin_content(filename, new_code)
+                messagebox.showinfo("Saved", f"Plugin '{plugin_info['name']}' saved successfully!")
+                self.show_tab("bd_plugin_studio")
+            except Exception as e:
+                messagebox.showerror("Save Error", str(e))
+
+        tk.Button(bot, text="SAVE CODE CHANGES", font=("DejaVu Sans", 8, "bold"), bg=C_CYAN, fg="#10121a", relief="flat", padx=14, pady=5, cursor="hand2", command=_save_plugin).pack(side="left")
+        tk.Button(bot, text="Close", font=("DejaVu Sans", 8), bg="#2d3244", fg=C_TEXT_H, relief="flat", padx=12, pady=5, cursor="hand2", command=p_win.destroy).pack(side="right")
+
+    # -------------------------------------------------------------
+    # TAB: DISCORD UI ENHANCEMENTS & TOGGLES
+    # -------------------------------------------------------------
+    def render_discord_ui_tab(self):
+        c = self.content_scroll
+
+        # Header Card
+        card_head = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_head.pack(fill="x", pady=(0, 14))
+
+        tk.Label(card_head, text="Discord UI Enhancements & Toggles", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        desc = "Toggle specialized CSS modifications directly injected into the Discord client: hidden channels styling, compact layout, privacy avatar blur, and smooth animations."
+        tk.Label(card_head, text=desc, font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED, wraplength=640, justify="left").pack(anchor="w", pady=(2, 10))
+
+        btn_apply = tk.Button(card_head, text="SAVE & APPLY UI ENHANCEMENTS", font=("DejaVu Sans", 8, "bold"),
+                              bg=C_BLURPLE, fg="#ffffff", relief="flat", padx=16, pady=6, cursor="hand2",
+                              command=self.apply_theme_action)
+        btn_apply.pack(anchor="w")
+
+        # Enhancement Cards
+        features = [
+            (self.show_hidden_ch_var, "Show Hidden & Locked Channels Indicator",
+             "Styles locked or restricted channels with soft rose lock icons and dimmed titles so you can navigate them clearly."),
+            (self.compact_mode_var, "Ultra Compact Chat Mode",
+             "Reduces vertical padding between messages, channel items, and embeds for high-density reading."),
+            (self.hide_member_list_var, "Auto-Collapse Member List",
+             "Collapses the right-hand server members list to a slim 48px bar; expands smoothly on mouse hover."),
+            (self.hide_server_list_var, "Auto-Collapse Server Rail (Guilds)",
+             "Collapses the left-hand server icon rail to a minimalist 14px strip; expands smoothly on hover."),
+            (self.smooth_anim_var, "Smooth Hover Transitions & Animations",
+             "Enables sleek 0.18s cubic-bezier sliding and fading animations on channel links, messages, and action buttons."),
+            (self.mention_glow_var, "Mention & Unread Soft Neon Glow",
+             "Highlights pings and unread channel badges with a soft luminous pink neon border and gradient glow."),
+            (self.blur_avatars_var, "Privacy Blur User Avatars",
+             "Applies a subtle privacy blur to all chat profile avatars; reveals avatar smoothly on mouse hover."),
+            (self.typing_indicator_var, "Styled Typing Indicator Bubble",
+             "Renders the 'several people are typing...' status inside a floating translucent pill with accent colored dots.")
+        ]
+
+        card_opts = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        card_opts.pack(fill="x")
+
+        for var, title, detail in features:
+            self.create_feature_toggle_row(card_opts, var, title, detail)
+
+    def create_feature_toggle_row(self, parent, var, title, desc):
+        row = tk.Frame(parent, bg=C_CARD_ALT, padx=14, pady=10)
+        row.pack(fill="x", pady=4)
+
+        col = tk.Frame(row, bg=C_CARD_ALT)
+        col.pack(side="left", fill="both", expand=True)
+
+        tk.Label(col, text=title, font=("DejaVu Sans", 9, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(col, text=desc, font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED, wraplength=580, justify="left").pack(anchor="w", pady=(2, 0))
+
+        btn = tk.Button(row, text="[ ENABLED ]" if var.get() else "[ DISABLED ]",
+                        font=("DejaVu Sans", 8, "bold"),
+                        bg=C_GREEN if var.get() else "#3b3e4f",
+                        fg="#ffffff", relief="flat", padx=12, pady=5, cursor="hand2")
+        def _toggle():
+            new_v = not var.get()
+            var.set(new_v)
+            btn.config(text="[ ENABLED ]" if new_v else "[ DISABLED ]",
+                       bg=C_GREEN if new_v else "#3b3e4f")
+        btn.config(command=_toggle)
+        btn.pack(side="right")
 
     def open_folder_system(self, path):
         if sys.platform == "win32":
@@ -1232,43 +1756,6 @@ class DiscordStyledStudio:
             subprocess.run(["open", path])
         else:
             subprocess.run(["xdg-open", path])
-
-    def action_download_bd_addon(self, addon_item):
-        def _task():
-            ok, msg = bd_store.download_addon(addon_item)
-            self.root.after(0, lambda: self._on_addon_downloaded(ok, msg))
-
-        threading.Thread(target=_task, daemon=True).start()
-
-    def _on_addon_downloaded(self, ok, msg):
-        self.show_tab("bd_store")
-        if ok:
-            messagebox.showinfo("Success", f"{msg}\n\nTip: Press Ctrl+R in Discord to reload and activate!")
-        else:
-            messagebox.showerror("Download Failed", msg)
-
-    def action_uninstall_bd_addon(self, addon_item):
-        ok, msg = bd_store.uninstall_addon(addon_item["type"], addon_item["filename"])
-        self.show_tab("bd_store")
-        if ok:
-            messagebox.showinfo("Uninstalled", f"{msg}\n\nTip: Press Ctrl+R in Discord to reload.")
-        else:
-            messagebox.showerror("Error", msg)
-
-    def action_install_from_url(self):
-        url = getattr(self, "bd_url_entry", None)
-        if not url:
-            return
-        url_text = url.get().strip()
-        if not url_text:
-            messagebox.showwarning("Notice", "Please enter a valid URL to download.")
-            return
-
-        def _task():
-            ok, msg = bd_store.install_custom_url(url_text)
-            self.root.after(0, lambda: self._on_addon_downloaded(ok, msg))
-
-        threading.Thread(target=_task, daemon=True).start()
 
     # -------------------------------------------------------------
     # TAB 9: CONTRIBUTORS & WIKI
@@ -1328,7 +1815,9 @@ class DiscordStyledStudio:
         commands = [
             ("Toggle Master Theme (ON / OFF)", lambda: [pal_win.destroy(), self.toggle_master_theme()]),
             ("Open Theme Manager (Wallpapers & Live PVs)", lambda: [pal_win.destroy(), self.show_tab("theme_manager")]),
-            ("Browse BetterDiscord Addon Store (Themes & Plugins)", lambda: [pal_win.destroy(), self.show_tab("bd_store")]),
+            ("Open BetterDiscord Theme Studio (Upload & Modify)", lambda: [pal_win.destroy(), self.show_tab("bd_theme_studio")]),
+            ("Open BetterDiscord Plugin Manager (Upload & Manage)", lambda: [pal_win.destroy(), self.show_tab("bd_plugin_studio")]),
+            ("Open Discord UI Enhancements (Toggles & Style)", lambda: [pal_win.destroy(), self.show_tab("discord_ui")]),
             ("Switch to Anime Wallpaper Mode", lambda: [pal_win.destroy(), self.select_display_mode("anime_wallpaper")]),
             ("Switch to Transparent Window Mode", lambda: [pal_win.destroy(), self.select_display_mode("window_transparent")]),
             ("Switch to Vanilla Discord Client", lambda: [pal_win.destroy(), self.select_display_mode("vanilla_discord")]),
@@ -1435,6 +1924,15 @@ class DiscordStyledStudio:
         self.settings["top_spacing"] = self.top_spacing_var.get()
         self.settings["zero_lag"] = self.zero_lag_var.get()
         self.settings["chat_avatar_fixed"] = self.avatar_fix_var.get()
+        # Discord UI Enhancements
+        self.settings["show_hidden_channels"] = self.show_hidden_ch_var.get()
+        self.settings["compact_mode"] = self.compact_mode_var.get()
+        self.settings["hide_member_list"] = self.hide_member_list_var.get()
+        self.settings["hide_server_list"] = self.hide_server_list_var.get()
+        self.settings["smooth_animations"] = self.smooth_anim_var.get()
+        self.settings["mention_glow"] = self.mention_glow_var.get()
+        self.settings["blur_avatars"] = self.blur_avatars_var.get()
+        self.settings["typing_indicator_fancy"] = self.typing_indicator_var.get()
 
         theme_engine.apply_theme(self.settings)
         if not silent:

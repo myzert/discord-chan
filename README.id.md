@@ -80,7 +80,9 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 | **Pintasan Command Palette (`Ctrl+Shift+P`)** | Buka panel kontrol Studio langsung dari dalam Discord atau desktop kapan saja dengan `Ctrl+Shift+P`. |
 | **Aksi 1-Klik INSTALL Bawaan** | Tombol INSTALL hijau di panel samping yang menginjeksi BetterDiscord secara instan lalu langsung membuka Theme Manager. |
 | **Theme Manager & Showcase PV Visual** | Sebelumnya Wallpaper Manager, kini berevolusi menjadi Theme & UI Mod Hub lengkap dengan foto PV visual, penjelasan lengkap tiap mod anime, spesifikasi warna aksen, dan tombol sekali klik untuk ganti tema. |
-| **Store & Downloader Addon BetterDiscord** | Download tema UI populer (ClearVision, Translucence, Frosted Glass, Dark Matter) dan plugin komunitas (ShowHiddenChannels, BetterRoleColors, VoiceEvents) langsung dengan 1 klik ke BetterDiscord tanpa perlu copy file manual. |
+| **Studio Tema & Customizer BetterDiscord** | Upload tema BetterDiscord apa saja (`.theme.css` / `.css`) langsung ke panel, dan modifikasi warna aksen dengan color picker visual, ganti wallpaper, serta edit kode CSS langsung dengan editor bawaan. |
+| **Manager & Uploader Plugin BetterDiscord** | Upload dan pasang plugin komunitas (`.plugin.js`, `.js`, atau `.zip`), aktifkan/nonaktifkan status plugin, lihat/edit kode JavaScript, dan hot-reload Discord dengan 1 klik. |
+| **Peningkatan UI Discord & Pengatur Tampilan** | Pengatur fitur CSS khusus: penanda channel tersembunyi/terkunci (hidden channels), mode super padat (compact mode), sembunyikan member list & server rail otomatis saat tidak disentuh, animasi halus, dan blur foto profil untuk privasi. |
 
 ---
 
@@ -90,7 +92,7 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 | :--- | :--- | :--- |
 | **Arsitektur Engine** | Mod loader & runtime plugin saja | **Powered by BetterDiscord Engine** + Studio Visual Terpadu |
 | **GUI Pengaturan Tema** | Manual edit file CSS sendiri | **Panel Kontrol Studio Bergaya Discord Asli** (`Ctrl+Shift+P` & `F11`) |
-| **1-Click Addons Store** | Download manual di web lalu copy file | **Store Bawaan di Panel & Downloader URL Otomatis** |
+| **Customizer Tema & Plugin BD** | Edit manual dan pindah folder manual | **Upload, Modifikasi & Edit Langsung** dengan color picker visual, ganti wallpaper & editor kode bawaan |
 | **3 Mode Tampilan Instan** | Harus gonta-ganti file tema | **3 Mode 1-Klik** (Wallpaper Anime, Tembus Aplikasi Belakang, Vanilla) |
 | **Transparansi Kolom Chat** | Kaku dan sering tertutup abu-abu | **100% Kaca Tembus Pandang** tanpa abu-abu solid penghalang |
 | **Slider UI Real-Time** | Tidak ada (harus otak-atik kode) | **Slider Langsung** untuk Wallpaper, Chat, Sidebar, Embed & Sudut (`0px` - `24px`) |

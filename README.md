@@ -80,7 +80,9 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 | **In-Discord Command Palette (`Ctrl+Shift+P`)** | Launch the Studio Control Center directly from inside Discord or desktop with `Ctrl+Shift+P`. |
 | **1-Click INSTALL Action** | Prominent INSTALL button in the Studio rail that automatically injects BetterDiscord and transitions directly into the Theme Manager. |
 | **Theme Manager & Visual PV Showcase** | Formerly Wallpaper Manager, now an all-in-one Theme & UI Mod Hub featuring visual PVs, detailed mod descriptions, live specs, and 1-click theme application. |
-| **BetterDiscord Addon Store & Downloader** | Direct 1-click download for popular community UI themes (ClearVision, Translucence, Frosted Glass, Dark Matter) and plugins (ShowHiddenChannels, BetterRoleColors, VoiceEvents) directly into BetterDiscord without manual file copying. |
+| **BetterDiscord Theme Studio & Customizer** | Upload ANY BetterDiscord theme (`.theme.css` / `.css`) directly into the app, customize with a live visual color picker, wallpaper replacer, and full multi-line CSS code editor with Find & Replace. |
+| **BetterDiscord Plugin Manager & Uploader** | Upload and install community plugins (`.plugin.js`, `.js`, or `.zip`), toggle active states in `plugins.json`, view/edit JavaScript code, and hot-reload Discord with 1-click. |
+| **Discord UI Enhancements & Toggles** | Toggle specialized client-side enhancements: hidden & locked channels styling, ultra-compact mode, auto-collapse member list, auto-collapse server rail, smooth animations, mention glow, and privacy avatar blur. |
 
 ---
 
@@ -90,7 +92,7 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 | :--- | :--- | :--- |
 | **Engine Architecture** | Mod loader & plugin runtime | **Powered by BetterDiscord Engine** + Visual Discord-Styled Studio |
 | **Theme Customizer GUI** | Manual CSS file editing | **Dedicated Control Studio Dashboard** (`Ctrl+Shift+P` & `F11`) |
-| **1-Click Addons Store** | Manual download & moving `.css`/`.js` files | **Built-in 1-Click Store & Direct Link Downloader** |
+| **BD Theme & Plugin Customizer** | Manual editing and manual folder moving | **Upload, Customize & Edit Live** with visual color picker, wallpaper replacer, and built-in code editor |
 | **Display Modes** | Manual theme swapping | **3 One-Click Modes** (Anime Wallpaper, See-Through Window, Vanilla) |
 | **Chat Column Translucency** | Hard-coded per theme | **100% Glass Translucent Chat** with zero solid grey obstruction |
 | **Live UI Sliders** | None (edit code) | **Live Sliders** for Wallpapers, Chat, Sidebars, Embeds & Corner Radius (`0px` - `24px`) |

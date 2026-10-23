@@ -48,7 +48,15 @@ DEFAULT_SETTINGS = {
     "font_family": "gg sans, 'Noto Sans', sans-serif",
     "zero_lag": True,                 # Strip CPU blur & shadows
     "chat_avatar_fixed": True,        # Message avatar alignment guard
-    "active_preset": "Sakura Soft"
+    "active_preset": "Sakura Soft",
+    "show_hidden_channels": False,    # Discord UI: Style locked & hidden channels
+    "compact_mode": False,            # Discord UI: Ultra compact message spacing
+    "hide_member_list": False,        # Discord UI: Auto-collapse member list
+    "hide_server_list": False,        # Discord UI: Auto-collapse guilds sidebar
+    "smooth_animations": True,        # Discord UI: Smooth hover transitions
+    "mention_glow": True,             # Discord UI: Soft neon glow on mentions & badges
+    "blur_avatars": False,            # Discord UI: Blur avatars until hover
+    "typing_indicator_fancy": True    # Discord UI: Styled typing bubble
 }
 
 def load_settings():
@@ -276,9 +284,14 @@ body {
 {bg_wallpaper_css}
 
 /* ========================================================
-   ZERO-LAG ENGINE: REMOVE HEAVY BOX-SHADOWS & CPU BLURS
+   ZERO-LAG ENGINE: OPTIMIZED CHAT & SCROLLER HARDWARE ACCELERATION
    ======================================================== */
-*, *::before, *::after {{
+.messagesWrapper__36d07,
+.scroller__36d07,
+[class*="messagesWrapper_"],
+[class*="scrollerContent_"],
+[class*="chatContent_"],
+[class*="chat_"] {{
     box-shadow: none !important;
     text-shadow: none !important;
     backdrop-filter: none !important;
@@ -608,6 +621,163 @@ img[class*="emoji_"],
     background: var(--accent-pink) !important;
 }}
 """
+    # ========================================================
+    # DISCORD UI ENHANCEMENTS (CONDITIONAL TOGGLES)
+    # ========================================================
+    enhancements = []
+    
+    # 1. Hidden & Locked Channels Indicator
+    if settings.get("show_hidden_channels", False):
+        enhancements.append("""
+/* Discord UI Enhancement: Hidden & Locked Channels Indicator */
+[class*="modeLocked_"],
+[class*="typeLocked_"],
+[class*="channel_"][aria-disabled="true"],
+li[class*="containerDefault_"]:has([class*="modeLocked_"]) {
+    opacity: 0.6 !important;
+    filter: grayscale(40%) !important;
+}
+[class*="modeLocked_"] [class*="icon_"] path,
+[class*="typeLocked_"] [class*="icon_"] path {
+    fill: #ff85a2 !important;
+}
+li[class*="containerDefault_"]:has([class*="modeLocked_"]):hover {
+    opacity: 0.9 !important;
+    filter: grayscale(0%) !important;
+}
+""")
+
+    # 2. Ultra Compact Mode
+    if settings.get("compact_mode", False):
+        enhancements.append("""
+/* Discord UI Enhancement: Ultra Compact Mode */
+[class*="message__"] {
+    margin-top: 0px !important;
+    margin-bottom: 0px !important;
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    min-height: auto !important;
+}
+[class*="contents__"] {
+    padding-top: 0px !important;
+}
+[class*="avatar__"] {
+    width: 32px !important;
+    height: 32px !important;
+    top: 2px !important;
+}
+[class*="containerDefault_"] {
+    padding-top: 1px !important;
+    padding-bottom: 1px !important;
+}
+""")
+
+    # 3. Auto-Collapse Member List
+    if settings.get("hide_member_list", False):
+        enhancements.append("""
+/* Discord UI Enhancement: Auto-Collapse Member List */
+.membersWrap__5ca65,
+[class*="membersWrap_"] {
+    min-width: 48px !important;
+    width: 48px !important;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow: hidden !important;
+}
+.membersWrap__5ca65:hover,
+[class*="membersWrap_"]:hover {
+    width: 240px !important;
+}
+""")
+
+    # 4. Auto-Collapse Server List
+    if settings.get("hide_server_list", False):
+        enhancements.append("""
+/* Discord UI Enhancement: Auto-Collapse Server List */
+.guilds__357e6,
+[class*="guilds_"] {
+    width: 14px !important;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    overflow: hidden !important;
+}
+.guilds__357e6:hover,
+[class*="guilds_"]:hover {
+    width: 72px !important;
+}
+""")
+
+    # 5. Smooth Animations
+    if settings.get("smooth_animations", True):
+        enhancements.append("""
+/* Discord UI Enhancement: Smooth Animations */
+[class*="link__"],
+[class*="channel_"],
+[class*="message__"],
+[class*="button_"],
+[class*="item_"] {
+    transition: background 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+                color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+[class*="channel_"]:hover [class*="link__"] {
+    transform: translateX(3px) !important;
+}
+""")
+
+    # 6. Mention & Unread Soft Neon Glow
+    if settings.get("mention_glow", True):
+        enhancements.append(f"""
+/* Discord UI Enhancement: Mention & Unread Soft Neon Glow */
+[class*="mentioned__"] {{
+    background: rgba(255, 133, 162, 0.12) !important;
+    border-left: 3px solid {accent} !important;
+    position: relative !important;
+}}
+[class*="mentioned__"]::before {{
+    content: "" !important;
+    position: absolute !important;
+    inset: 0 !important;
+    background: radial-gradient(circle at left, rgba(255, 133, 162, 0.15) 0%, transparent 70%) !important;
+    pointer-events: none !important;
+}}
+[class*="unreadPill_"],
+[class*="badge_"] {{
+    background-color: {accent} !important;
+    color: #ffffff !important;
+}}
+""")
+
+    # 7. Privacy Blur Avatars
+    if settings.get("blur_avatars", False):
+        enhancements.append("""
+/* Discord UI Enhancement: Privacy Blur Avatars Until Hover */
+[class*="avatar__"]:not(:hover) {
+    filter: blur(5px) !important;
+    transition: filter 0.2s ease !important;
+}
+[class*="avatar__"]:hover {
+    filter: blur(0px) !important;
+}
+""")
+
+    # 8. Styled Typing Indicator
+    if settings.get("typing_indicator_fancy", True):
+        enhancements.append(f"""
+/* Discord UI Enhancement: Styled Typing Indicator */
+[class*="typing__"] {{
+    background: rgba(24, 18, 30, 0.65) !important;
+    border-radius: 12px !important;
+    padding: 2px 10px !important;
+    width: fit-content !important;
+    margin-bottom: 2px !important;
+}}
+[class*="typing__"] [class*="dots_"] span {{
+    background-color: {accent} !important;
+}}
+""")
+
+    if enhancements:
+        css += "\n" + "\n".join(enhancements)
+
     return css
 
 def apply_theme(settings=None):
