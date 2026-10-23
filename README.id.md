@@ -78,6 +78,8 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 | **Ekspor & Impor Tema (.zip Bundle)** | Bagikan hasil custom temamu ke teman! Mengekspor semua nilai slider, warna hex, dan wallpaper bawaan ke dalam 1 file `.zip`. |
 | **Engine Zero-Lag & Anti-Collision** | Menghapus efek `box-shadow` dan `backdrop-filter: blur` yang bikin berat. Dilengkapi jarak atas (`top-spacing`) agar tidak nabrak taskbar. |
 | **Pintasan Command Palette (`Ctrl+Shift+P`)** | Buka panel kontrol Studio langsung dari dalam Discord atau desktop kapan saja dengan `Ctrl+Shift+P`. |
+| **Aksi 1-Klik INSTALL Bawaan** | Tombol INSTALL hijau di panel samping yang menginjeksi BetterDiscord secara instan lalu langsung membuka Theme Manager. |
+| **Theme Manager & Showcase PV Visual** | Sebelumnya Wallpaper Manager, kini berevolusi menjadi Theme & UI Mod Hub lengkap dengan foto PV visual, penjelasan lengkap tiap mod anime, spesifikasi warna aksen, dan tombol sekali klik untuk ganti tema. |
 | **Store & Downloader Addon BetterDiscord** | Download tema UI populer (ClearVision, Translucence, Frosted Glass, Dark Matter) dan plugin komunitas (ShowHiddenChannels, BetterRoleColors, VoiceEvents) langsung dengan 1 klik ke BetterDiscord tanpa perlu copy file manual. |
 
 ---

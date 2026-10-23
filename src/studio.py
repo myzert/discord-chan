@@ -58,31 +58,61 @@ WALLPAPERS = [
     {
         "id": "kaede_to_suzu",
         "name": "Kaede to Suzu The Animation",
+        "tag": "ANIME MAID TWINS UI MOD",
         "desc": "Maid Twins Anime (1920x1080 Full HD)",
+        "details": "Brings the iconic Kaede and Suzu maid twin aesthetic to Discord. Overrides core Discord design tokens with crystal-clear chat translucency, soft sakura pink accent highlights, and crisp translucent embed cards without grey obstruction.",
+        "recommended_radius": "12px",
+        "recommended_opacity": "0.55",
+        "accent_name": "Sakura Pink (#ff85a2)",
+        "accent_hex": "#ff85a2",
         "path": os.path.join(REPO_DIR, "assets", "wallpapers", "kaede_to_suzu.webp")
     },
     {
         "id": "whisper",
         "name": "Whisper Me a Love Song",
+        "tag": "YURI PASTEL ROMANCE UI MOD",
         "desc": "Sasayaku You ni Koi wo Utau (Yori & Himari)",
+        "details": "A tender, heartwarming pastel theme inspired by the music and romance of Whisper Me a Love Song. Features warm strawberry-rose tones, translucent member lists, and smooth rounded channel buttons for a cozy chatting vibe.",
+        "recommended_radius": "14px",
+        "recommended_opacity": "0.50",
+        "accent_name": "Strawberry Rose (#fb7185)",
+        "accent_hex": "#fb7185",
         "path": os.path.join(REPO_DIR, "assets", "wallpapers", "1_whisper_me_a_love_song.jpg")
     },
     {
         "id": "sakura",
-        "name": "Sakura Blossom Minimal",
+        "name": "Sakura Blossom Minimalist",
+        "tag": "MINIMALIST SPRING UI MOD",
         "desc": "Japanese Cherry Blossom Aesthetic",
+        "details": "Delicate cherry blossom petals falling gracefully across a soft twilight sky. Tailored for maximum text readability and distraction-free voice chat with subtle translucent backdrops and calming pastel peach accents.",
+        "recommended_radius": "10px",
+        "recommended_opacity": "0.45",
+        "accent_name": "Pastel Peach (#f472b6)",
+        "accent_hex": "#f472b6",
         "path": os.path.join(REPO_DIR, "assets", "wallpapers", "2_sakura_blossom_minimal.jpg")
     },
     {
         "id": "clouds",
         "name": "Pastel Sunset Clouds",
+        "tag": "DUSK TWILIGHT SKY UI MOD",
         "desc": "Soft Evening Pastel Scenery",
+        "details": "A breathtaking purple-gold sunset horizon that turns Discord into a tranquil twilight sanctuary. Combines deep violet glow accents with frosted translucent containers for long evening gaming and study sessions.",
+        "recommended_radius": "12px",
+        "recommended_opacity": "0.60",
+        "accent_name": "Violet Glow (#c084fc)",
+        "accent_hex": "#c084fc",
         "path": os.path.join(REPO_DIR, "assets", "wallpapers", "3_pastel_clouds_scenery.jpg")
     },
     {
         "id": "neko",
         "name": "Discord-Chan Neko Mascot",
+        "tag": "DARK CYBER NEKO MASCOT MOD",
         "desc": "Minimalist Dark Neko Wallpaper",
+        "details": "The signature Discord-Chan Neko Mascot artwork. Deep obsidian dark mode with glowing blurple and cyan neon trims. Perfect for coders, power users, and nighttime server moderation with sharp high-contrast text.",
+        "recommended_radius": "16px",
+        "recommended_opacity": "0.65",
+        "accent_name": "Cyan Glow (#38bdf8)",
+        "accent_hex": "#38bdf8",
         "path": os.path.join(REPO_DIR, "assets", "wallpapers", "4_discord_chan_neko.jpg")
     }
 ]
@@ -246,7 +276,7 @@ class DiscordStyledStudio:
         sep = tk.Frame(self.guilds_bar, bg="#35363c", height=2, width=32)
         sep.pack(pady=4)
 
-        self.create_guild_action("SETUP", C_BLURPLE, "#ffffff", self.run_instant_setup)
+        self.create_guild_action("INSTALL", C_GREEN, "#ffffff", self.run_instant_setup)
         self.create_guild_action("APPLY", C_CARD, C_TEXT_H, self.apply_theme_action)
         self.create_guild_action("RELOAD", C_CARD, C_TEXT_H, self.restart_discord_safe)
 
@@ -278,8 +308,8 @@ class DiscordStyledStudio:
         self.add_channel_btn("mode", "theme-mode-and-toggles")
         self.add_channel_btn("chat", "chat-and-transparency")
 
-        self.add_category_header("CUSTOMIZATION")
-        self.add_channel_btn("wallpapers", "wallpapers-manager")
+        self.add_category_header("CUSTOMIZATION & THEMES")
+        self.add_channel_btn("theme_manager", "theme-manager")
         self.add_channel_btn("colors", "color-palette")
         self.add_channel_btn("voice", "voice-and-video")
         self.add_channel_btn("layout", "layout-and-clearance")
@@ -416,10 +446,10 @@ class DiscordStyledStudio:
             self.top_channel_title.config(text="chat-and-transparency")
             self.top_topic.config(text="| Chat column translucency, native chat input bar, corner radius & embeds")
             self.render_chat_tab()
-        elif tab_id == "wallpapers":
-            self.top_channel_title.config(text="wallpapers-manager")
-            self.top_topic.config(text="| Featured anime presets and manual all-custom image loader")
-            self.render_wallpapers_tab()
+        elif tab_id in ("theme_manager", "wallpapers"):
+            self.top_channel_title.config(text="theme-manager")
+            self.top_topic.config(text="| Visual anime UI mods, live wallpaper PVs, full descriptions & custom loader")
+            self.render_theme_manager_tab()
         elif tab_id == "colors":
             self.top_channel_title.config(text="color-palette")
             self.top_topic.config(text="| Minimalist pastel palettes, hex pickers, and embed styling")
@@ -594,88 +624,180 @@ class DiscordStyledStudio:
         scale.pack(fill="x", pady=(0, 6))
 
     # -------------------------------------------------------------
-    # TAB 3: WALLPAPERS MANAGER (ALL-CUSTOM & PRESETS)
+    # TAB 3: THEME MANAGER (WALLPAPERS, LIVE PVS & FULL UI MODS)
     # -------------------------------------------------------------
-    def render_wallpapers_tab(self):
+    def render_theme_manager_tab(self):
         c = self.content_scroll
         active_id = self.settings.get("wallpaper_id", "kaede_to_suzu")
         current_path = self.settings.get("wallpaper_path", "")
+        current_mode = self.settings.get("theme_mode", "anime_wallpaper")
+        is_enabled = self.settings.get("theme_enabled", True)
 
-        hero_card = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        # 1. Hero Card: Current Active Theme & Live Specs
+        hero_card = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
         hero_card.pack(fill="x", pady=(0, 14))
 
-        tk.Label(hero_card, text="CURRENT ACTIVE WALLPAPER", font=("DejaVu Sans", 8, "bold"), bg=C_CARD, fg=C_PINK).pack(anchor="w")
+        tk.Label(hero_card, text="CURRENT ACTIVE THEME & UI MOD", font=("DejaVu Sans", 8, "bold"), bg=C_CARD, fg=C_PINK).pack(anchor="w")
 
         row_h = tk.Frame(hero_card, bg=C_CARD)
-        row_h.pack(fill="x", pady=(6, 0))
+        row_h.pack(fill="x", pady=(8, 0))
 
-        thumb = self.get_thumbnail(current_path, width=160, height=90)
-        lbl_h_thumb = tk.Label(row_h, image=thumb, bg=C_CARD)
+        thumb = self.get_thumbnail(current_path, width=170, height=96)
+        lbl_h_thumb = tk.Label(row_h, image=thumb, bg=C_CARD, relief="ridge", bd=1)
         lbl_h_thumb.image = thumb
-        lbl_h_thumb.pack(side="left", padx=(0, 14))
+        lbl_h_thumb.pack(side="left", padx=(0, 16))
 
         info_h = tk.Frame(row_h, bg=C_CARD)
         info_h.pack(side="left", fill="both", expand=True)
 
-        active_name = "Custom Wallpaper"
+        active_name = "Custom Wallpaper Mod"
+        active_tag = "CUSTOM USER IMAGE"
+        active_desc = "User-selected custom anime background with translucent glass styling."
         for wp in WALLPAPERS:
             if wp["id"] == active_id:
                 active_name = wp["name"]
+                active_tag = wp.get("tag", "ANIME UI MOD")
+                active_desc = wp.get("details", wp.get("desc", ""))
                 break
 
-        tk.Label(info_h, text=active_name, font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        tk.Label(info_h, text=f"Path: {current_path}", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED, wraplength=480, justify="left").pack(anchor="w", pady=(2, 4))
+        if not is_enabled:
+            mode_badge = ("VANILLA DISCORD (THEME OFF)", "#3b3e45")
+        elif current_mode == "window_transparent":
+            mode_badge = ("SEE-THROUGH ACRYLIC WINDOW", "#0284c7")
+        else:
+            mode_badge = (active_tag, "#7c3aed")
 
         tag_row = tk.Frame(info_h, bg=C_CARD)
-        tag_row.pack(anchor="w", pady=(2, 0))
-        tk.Label(tag_row, text="[ ACTIVE IN DISCORD ]", font=("DejaVu Sans", 8, "bold"), bg=C_GREEN, fg="#ffffff", padx=8, pady=2).pack(side="left")
+        tag_row.pack(anchor="w", pady=(0, 4))
+        tk.Label(tag_row, text=f" {mode_badge[0]} ", font=("DejaVu Sans", 7, "bold"), bg=mode_badge[1], fg="#ffffff").pack(side="left", padx=(0, 6))
+        tk.Label(tag_row, text="[ ACTIVE IN DISCORD ]", font=("DejaVu Sans", 7, "bold"), bg=C_GREEN, fg="#ffffff").pack(side="left")
 
-        # Featured Presets
-        card_presets = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        tk.Label(info_h, text=active_name, font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(info_h, text=active_desc, font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED, wraplength=520, justify="left").pack(anchor="w", pady=(2, 6))
+
+        spec_row = tk.Frame(info_h, bg=C_CARD)
+        spec_row.pack(anchor="w")
+        tk.Label(spec_row, text=f"Corner Radius: {self.settings.get('corner_radius', 12)}px  |  Chat: 100% Glass  |  Overlay: {int(float(self.settings.get('wallpaper_opacity', 0.55))*100)}%",
+                 font=("DejaVu Sans", 8), bg=C_CARD, fg=C_MUTED).pack(side="left")
+
+        # 2. Curated Anime Themes & UI Mods with Live PVs
+        card_presets = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
         card_presets.pack(fill="x", pady=(0, 14))
 
-        tk.Label(card_presets, text="Featured Anime Presets", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
-        tk.Label(card_presets, text="Click to apply high-definition anime backgrounds immediately:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 10))
+        tk.Label(card_presets, text="Curated Anime Themes & UI Mods (Live Visual PV)", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_presets, text="Click 'Apply Theme Mod' to instantly inject high-definition anime visuals, glass CSS, and matching accents:",
+                 font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 12))
 
         for wp in WALLPAPERS:
-            is_active = (wp["id"] == active_id)
-            row = tk.Frame(card_presets, bg=C_CARD_ALT, padx=10, pady=8)
-            row.pack(fill="x", pady=4)
+            is_active = (wp["id"] == active_id and current_mode == "anime_wallpaper" and is_enabled)
+            row = tk.Frame(card_presets, bg=C_CARD_ALT, padx=12, pady=10)
+            row.pack(fill="x", pady=5)
 
-            wp_thumb = self.get_thumbnail(wp["path"], width=110, height=62)
-            lbl_t = tk.Label(row, image=wp_thumb, bg=C_CARD_ALT)
+            # Left: Visual PV Thumbnail
+            wp_thumb = self.get_thumbnail(wp["path"], width=140, height=80)
+            lbl_t = tk.Label(row, image=wp_thumb, bg=C_CARD_ALT, relief="ridge", bd=1)
             lbl_t.image = wp_thumb
-            lbl_t.pack(side="left", padx=(0, 12))
+            lbl_t.pack(side="left", padx=(0, 14))
 
+            # Middle: Full Details & Penjelasan Lengkap
             col_d = tk.Frame(row, bg=C_CARD_ALT)
             col_d.pack(side="left", fill="both", expand=True)
-            tk.Label(col_d, text=wp["name"], font=("DejaVu Sans", 9, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(anchor="w")
-            tk.Label(col_d, text=wp["desc"], font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED).pack(anchor="w", pady=(2, 0))
+
+            t_box = tk.Frame(col_d, bg=C_CARD_ALT)
+            t_box.pack(anchor="w")
+            tk.Label(t_box, text=f" {wp.get('tag', 'ANIME MOD')} ", font=("DejaVu Sans", 7, "bold"), bg="#5865f2", fg="#ffffff").pack(side="left", padx=(0, 6))
+            tk.Label(t_box, text=wp["name"], font=("DejaVu Sans", 10, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(side="left")
+
+            tk.Label(col_d, text=wp["desc"], font=("DejaVu Sans", 8, "bold"), bg=C_CARD_ALT, fg=C_PINK).pack(anchor="w", pady=(2, 2))
+            tk.Label(col_d, text=wp.get("details", ""), font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED, wraplength=500, justify="left").pack(anchor="w", pady=(0, 4))
+
+            spec_line = f"Accent: {wp.get('accent_name', 'Pink')}  •  Radius: {wp.get('recommended_radius', '12px')}  •  Opacity: {wp.get('recommended_opacity', '0.55')}"
+            tk.Label(col_d, text=spec_line, font=("DejaVu Sans", 7), bg=C_CARD_ALT, fg=C_MUTED).pack(anchor="w")
+
+            # Right: Action Button
+            right_col = tk.Frame(row, bg=C_CARD_ALT)
+            right_col.pack(side="right", padx=(10, 0))
 
             if is_active:
-                tk.Label(row, text="[ CURRENT ]", font=("DejaVu Sans", 8, "bold"), bg=C_GREEN, fg="#ffffff", padx=10, pady=4).pack(side="right")
+                tk.Label(right_col, text="[ CURRENTLY ACTIVE ]", font=("DejaVu Sans", 8, "bold"), bg=C_GREEN, fg="#ffffff", padx=12, pady=6).pack()
             else:
-                btn = tk.Button(row, text="Select Wallpaper", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#fff",
-                                relief="flat", padx=12, pady=4, cursor="hand2", command=lambda w=wp: self.select_preset_wallpaper(w))
-                btn.pack(side="right")
+                btn = tk.Button(right_col, text="Apply Theme Mod", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#fff",
+                                relief="flat", padx=14, pady=6, cursor="hand2", command=lambda w=wp: self.select_preset_wallpaper(w))
+                btn.pack()
 
-        # All-Custom Manual File Selection
-        card_custom = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        # 3. Special Display Architecture Mods
+        card_modes = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
+        card_modes.pack(fill="x", pady=(0, 14))
+
+        tk.Label(card_modes, text="Special Display Architecture Mods", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_modes, text="Switch the fundamental rendering behavior of the Discord desktop client:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 10))
+
+        # Mode A: Window Transparent
+        row_win = tk.Frame(card_modes, bg=C_CARD_ALT, padx=12, pady=10)
+        row_win.pack(fill="x", pady=4)
+
+        win_thumb = self.get_thumbnail(os.path.join(REPO_DIR, "assets", "previews", "preview_discord.png"), width=140, height=80)
+        lbl_w = tk.Label(row_win, image=win_thumb, bg=C_CARD_ALT, relief="ridge", bd=1)
+        lbl_w.image = win_thumb
+        lbl_w.pack(side="left", padx=(0, 14))
+
+        col_w = tk.Frame(row_win, bg=C_CARD_ALT)
+        col_w.pack(side="left", fill="both", expand=True)
+        t_w = tk.Frame(col_w, bg=C_CARD_ALT)
+        t_w.pack(anchor="w")
+        tk.Label(t_w, text=" SEE-THROUGH ACRYLIC MOD ", font=("DejaVu Sans", 7, "bold"), bg="#0284c7", fg="#ffffff").pack(side="left", padx=(0, 6))
+        tk.Label(t_w, text="See-Through Window Transparency", font=("DejaVu Sans", 10, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(side="left")
+        tk.Label(col_w, text="Makes Discord completely transparent so applications and desktop behind Discord show through with adjustable darkness tint.",
+                 font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED, wraplength=500, justify="left").pack(anchor="w", pady=(2, 0))
+
+        is_win_active = (current_mode == "window_transparent" and is_enabled)
+        r_w = tk.Frame(row_win, bg=C_CARD_ALT)
+        r_w.pack(side="right", padx=(10, 0))
+        if is_win_active:
+            tk.Label(r_w, text="[ CURRENTLY ACTIVE ]", font=("DejaVu Sans", 8, "bold"), bg=C_GREEN, fg="#ffffff", padx=12, pady=6).pack()
+        else:
+            tk.Button(r_w, text="Switch to Window Mode", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#fff",
+                      relief="flat", padx=12, pady=6, cursor="hand2", command=lambda: [self.select_display_mode("window_transparent"), self.show_tab("theme_manager")]).pack()
+
+        # Mode B: Vanilla Discord
+        row_van = tk.Frame(card_modes, bg=C_CARD_ALT, padx=12, pady=10)
+        row_van.pack(fill="x", pady=4)
+
+        col_v = tk.Frame(row_van, bg=C_CARD_ALT)
+        col_v.pack(side="left", fill="both", expand=True)
+        t_v = tk.Frame(col_v, bg=C_CARD_ALT)
+        t_v.pack(anchor="w")
+        tk.Label(t_v, text=" OFFICIAL DISCORD DEFAULT ", font=("DejaVu Sans", 7, "bold"), bg="#3b3e45", fg="#ffffff").pack(side="left", padx=(0, 6))
+        tk.Label(t_v, text="Vanilla Discord Native Client", font=("DejaVu Sans", 10, "bold"), bg=C_CARD_ALT, fg=C_TEXT_H).pack(side="left")
+        tk.Label(col_v, text="Temporarily disables all custom CSS injection and reverts Discord immediately to 100% native official styling.",
+                 font=("DejaVu Sans", 8), bg=C_CARD_ALT, fg=C_MUTED, wraplength=500, justify="left").pack(anchor="w", pady=(2, 0))
+
+        is_van_active = (current_mode == "vanilla_discord" or not is_enabled)
+        r_v = tk.Frame(row_van, bg=C_CARD_ALT)
+        r_v.pack(side="right", padx=(10, 0))
+        if is_van_active:
+            tk.Label(r_v, text="[ CURRENTLY ACTIVE ]", font=("DejaVu Sans", 8, "bold"), bg=C_GREEN, fg="#ffffff", padx=12, pady=6).pack()
+        else:
+            tk.Button(r_v, text="Switch to Vanilla Mode", font=("DejaVu Sans", 8, "bold"), bg="#3b3e45", fg="#fff",
+                      relief="flat", padx=12, pady=6, cursor="hand2", command=lambda: [self.select_display_mode("vanilla_discord"), self.show_tab("theme_manager")]).pack()
+
+        # 4. All-Custom Manual File Selection
+        card_custom = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
         card_custom.pack(fill="x", pady=(0, 14))
 
-        tk.Label(card_custom, text="Custom Wallpaper (Manual File Selection)", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
+        tk.Label(card_custom, text="All-Custom Wallpaper & Image Mod", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
         tk.Label(card_custom, text="Choose ANY image file from your computer without restriction (jpg, png, webp, gif):", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 8))
 
         row_c = tk.Frame(card_custom, bg=C_CARD)
         row_c.pack(fill="x", pady=4)
 
         entry = tk.Entry(row_c, textvariable=self.custom_path_var, bg=C_CARD_ALT, fg=C_TEXT_H, insertbackground=C_TEXT_H, relief="flat", font=("DejaVu Sans", 9))
-        entry.pack(side="left", fill="x", expand=True, ipady=5, padx=(0, 8))
+        entry.pack(side="left", fill="x", expand=True, ipady=6, padx=(0, 8))
 
         tk.Button(row_c, text="Browse File...", font=("DejaVu Sans", 8, "bold"), bg="#3b3e45", fg=C_TEXT_H, relief="flat", padx=10, pady=5, cursor="hand2",
                   command=self.browse_custom_wallpaper).pack(side="left")
 
-        tk.Button(row_c, text="Apply Custom Image", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#fff", relief="flat", padx=12, pady=5, cursor="hand2",
+        tk.Button(row_c, text="Apply Custom Image", font=("DejaVu Sans", 8, "bold"), bg=C_BLURPLE, fg="#fff", relief="flat", padx=14, pady=5, cursor="hand2",
                   command=self.apply_custom_wallpaper).pack(side="left", padx=(8, 0))
 
         # Quick directory jumps
@@ -688,14 +810,16 @@ class DiscordStyledStudio:
             tk.Button(row_quick, text=f"[{q_name}]", font=("DejaVu Sans", 8), bg=C_CARD, fg=C_TEXT, relief="flat", cursor="hand2",
                       command=lambda d=q_dir: self.browse_in_directory(d)).pack(side="left", padx=3)
 
-        # Wallpaper Darkness Overlay
-        card_trans = tk.Frame(c, bg=C_CARD, padx=16, pady=14)
+        # 5. Wallpaper Darkness Overlay Slider
+        card_trans = tk.Frame(c, bg=C_CARD, padx=16, pady=16)
         card_trans.pack(fill="x")
 
         tk.Label(card_trans, text="Wallpaper Darkening Overlay", font=("DejaVu Sans", 11, "bold"), bg=C_CARD, fg=C_TEXT_H).pack(anchor="w")
         tk.Label(card_trans, text="Adjust dark overlay to ensure high contrast text against light anime artwork:", font=("DejaVu Sans", 9), bg=C_CARD, fg=C_MUTED).pack(anchor="w", pady=(2, 8))
 
         self.create_slider(card_trans, "Wallpaper Darkening Level:", self.wp_opacity_var, 0.10, 0.95, 0.02)
+
+    render_wallpapers_tab = render_theme_manager_tab
 
     # -------------------------------------------------------------
     # TAB 4: COLOR PALETTES & EMBEDS
@@ -1203,6 +1327,7 @@ class DiscordStyledStudio:
 
         commands = [
             ("Toggle Master Theme (ON / OFF)", lambda: [pal_win.destroy(), self.toggle_master_theme()]),
+            ("Open Theme Manager (Wallpapers & Live PVs)", lambda: [pal_win.destroy(), self.show_tab("theme_manager")]),
             ("Browse BetterDiscord Addon Store (Themes & Plugins)", lambda: [pal_win.destroy(), self.show_tab("bd_store")]),
             ("Switch to Anime Wallpaper Mode", lambda: [pal_win.destroy(), self.select_display_mode("anime_wallpaper")]),
             ("Switch to Transparent Window Mode", lambda: [pal_win.destroy(), self.select_display_mode("window_transparent")]),
@@ -1226,9 +1351,15 @@ class DiscordStyledStudio:
         self.settings["wallpaper_id"] = wp["id"]
         self.settings["wallpaper_path"] = wp["path"]
         self.custom_path_var.set(wp["path"])
+        self.settings["theme_mode"] = "anime_wallpaper"
+        self.settings["theme_enabled"] = True
+        self.theme_mode_var.set("anime_wallpaper")
+        self.theme_enabled_var.set(True)
+        if "accent_hex" in wp:
+            self.settings["accent_color"] = wp["accent_hex"]
         self.apply_theme_action(silent=True)
-        self.show_tab("wallpapers")
-        messagebox.showinfo("Wallpaper Applied", f"Active wallpaper changed to:\n{wp['name']}")
+        self.show_tab("theme_manager")
+        messagebox.showinfo("Theme Mod Applied", f"Theme successfully applied:\n{wp['name']}\n\nMode: Anime Glass Translucency\nAccent: {wp.get('accent_name', 'Default')}")
 
     def browse_custom_wallpaper(self):
         f = filedialog.askopenfilename(
@@ -1258,7 +1389,7 @@ class DiscordStyledStudio:
         self.settings["wallpaper_id"] = "custom"
         self.settings["wallpaper_path"] = p
         self.apply_theme_action(silent=False)
-        self.show_tab("wallpapers")
+        self.show_tab("theme_manager")
 
     def select_palette(self, name, pri, sec):
         self.settings["active_preset"] = name
@@ -1317,8 +1448,8 @@ class DiscordStyledStudio:
             self.settings["wallpaper_path"] = kaede
             self.custom_path_var.set(kaede)
         self.apply_theme_action(silent=True)
-        self.show_tab("mode")
-        messagebox.showinfo("Setup Complete", "Instant Setup finished!\nTheme and icons are configured.")
+        self.show_tab("theme_manager")
+        messagebox.showinfo("Install Complete", "Discord-Chan has been successfully installed and injected!\n\nWelcome to Theme Manager. Select your preferred anime theme mod or UI preset below.")
 
     def toggle_fullscreen(self, event=None):
         self.is_fullscreen = not getattr(self, "is_fullscreen", False)

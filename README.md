@@ -78,6 +78,8 @@ irm https://raw.githubusercontent.com/myzert/discord-chan/main/install.ps1 | iex
 | **Export & Import Theme Bundles (.zip)** | Share your custom themes with friends! Exports all parameters, CSS, and embedded wallpapers into a single `.zip` file. |
 | **Zero-Lag & Anti-Collision Engine** | Eliminates CPU-heavy `box-shadow` and `backdrop-filter: blur`. Configurable `top-spacing` prevents header collision with window panels. |
 | **In-Discord Command Palette (`Ctrl+Shift+P`)** | Launch the Studio Control Center directly from inside Discord or desktop with `Ctrl+Shift+P`. |
+| **1-Click INSTALL Action** | Prominent INSTALL button in the Studio rail that automatically injects BetterDiscord and transitions directly into the Theme Manager. |
+| **Theme Manager & Visual PV Showcase** | Formerly Wallpaper Manager, now an all-in-one Theme & UI Mod Hub featuring visual PVs, detailed mod descriptions, live specs, and 1-click theme application. |
 | **BetterDiscord Addon Store & Downloader** | Direct 1-click download for popular community UI themes (ClearVision, Translucence, Frosted Glass, Dark Matter) and plugins (ShowHiddenChannels, BetterRoleColors, VoiceEvents) directly into BetterDiscord without manual file copying. |
 
 ---
