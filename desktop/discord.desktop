@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=Discord
+StartupWMClass=discord
+Comment=Discord Anime Edition - Whisper Me a Love Song
+GenericName=Internet Messenger
+Exec=/usr/bin/discord --no-sandbox %U
+Icon=/usr/share/pixmaps/discord.png
+Type=Application
+Categories=Network;InstantMessaging;
+MimeType=x-scheme-handler/discord;
+Path=/usr/bin

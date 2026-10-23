@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Discord-Chan Studio
+Comment=Control Center & Anime Theme Customizer for Discord
+Exec=/usr/local/bin/discord-chan-custom
+Icon=/usr/share/pixmaps/discord-chan.png
+Terminal=false
+Type=Application
+Categories=Settings;DesktopSettings;GTK;Network;
